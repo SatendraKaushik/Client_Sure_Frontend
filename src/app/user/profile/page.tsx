@@ -145,7 +145,13 @@ export default function ProfilePage() {
               return (
                 <button
                   key={item.name}
-                  onClick={() => setActiveSection(item.name)}
+                  onClick={() => {
+                    if (item.name === 'Accessed Resources') {
+                      router.push('/user/resources')
+                    } else {
+                      setActiveSection(item.name)
+                    }
+                  }}
                   className={`w-full text-left py-3 px-4 rounded-lg transition-colors flex items-center ${
                     activeSection === item.name 
                       ? 'bg-blue-600 text-white' 
@@ -565,12 +571,12 @@ export default function ProfilePage() {
                   <div className="text-6xl mb-4">📚</div>
                   <h3 className="text-2xl font-bold text-gray-900 mb-4">Accessed Resources</h3>
                   <p className="text-gray-600 mb-6">View all the resources you've accessed</p>
-                  <a 
-                    href="/user/resources" 
+                  <button 
+                    onClick={() => router.push('/user/resources')}
                     className="inline-block bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors font-semibold"
                   >
                     View Accessed Resources
-                  </a>
+                  </button>
                 </div>
               )}
             

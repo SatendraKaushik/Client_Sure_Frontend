@@ -1,8 +1,8 @@
 "use client"
 
 import { useState, useEffect, Suspense } from "react"
-import { Lock, FileText, Play, AlertTriangle, Database, Users, ExternalLink, MessageCircle } from "lucide-react"
-import { useSearchParams } from "next/navigation"
+import { Lock, FileText, Play, AlertTriangle, Database, Users, ExternalLink, MessageCircle, Bot } from "lucide-react"
+import { useSearchParams, useRouter } from "next/navigation"
 import { toast } from "sonner"
 import Navbar from "../components/Navbar"
 import Footer from "../components/Footer"
@@ -39,6 +39,7 @@ interface Resource {
 }
 
 function DashboardContent() {
+  const router = useRouter()
   const [userStats, setUserStats] = useState<UserStats | null>(null)
   const [resources, setResources] = useState<Resource[]>([])
   const [loading, setLoading] = useState(true)
@@ -179,7 +180,7 @@ function DashboardContent() {
         </div>
 
         {/* Hero Sections */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
           {/* Lead Information Section */}
           <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl shadow-lg p-6 border border-blue-200">
             <div className="flex items-center gap-3 mb-4">
@@ -189,7 +190,7 @@ function DashboardContent() {
               <h2 className="text-xl font-bold text-gray-900">Lead Information</h2>
             </div>
             <p className="text-gray-700 mb-4">Access verified business leads with complete contact details and social profiles.</p>
-            <button onClick={() => window.location.href = '/user/leads'} className="bg-blue-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-blue-700 transition-colors w-full">
+            <button onClick={() => router.push('/user/leads')} className="bg-blue-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-blue-700 transition-colors w-full">
               Browse Leads
             </button>
           </div>
@@ -203,7 +204,7 @@ function DashboardContent() {
               <h2 className="text-xl font-bold text-gray-900">Accessed Leads</h2>
             </div>
             <p className="text-gray-700 mb-4">View and manage all your unlocked leads with full contact information.</p>
-            <button onClick={() => window.location.href = '/user/leads?tab=accessed'} className="bg-green-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-green-700 transition-colors w-full">
+            <button onClick={() => router.push('/user/leads?tab=accessed')} className="bg-green-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-green-700 transition-colors w-full">
               View Accessed
             </button>
           </div>
@@ -217,7 +218,7 @@ function DashboardContent() {
               <h2 className="text-xl font-bold text-gray-900">External Tools</h2>
             </div>
             <p className="text-gray-700 mb-4">Explore powerful tools and integrations to boost your business growth.</p>
-            <button onClick={() => window.location.href = '/user/tools'} className="bg-purple-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-purple-700 transition-colors w-full">
+            <button onClick={() => router.push('/user/tools')} className="bg-purple-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-purple-700 transition-colors w-full">
               Explore Tools
             </button>
           </div>
@@ -231,8 +232,22 @@ function DashboardContent() {
               <h2 className="text-xl font-bold text-gray-900">Community</h2>
             </div>
             <p className="text-gray-700 mb-4">Connect with other members, share insights, and grow together.</p>
-            <button onClick={() => window.location.href = '/user/community'} className="bg-orange-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-orange-700 transition-colors w-full">
+            <button onClick={() => router.push('/user/community')} className="bg-orange-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-orange-700 transition-colors w-full">
               Join Community
+            </button>
+          </div>
+
+          {/* Chatbot Tools Section */}
+          <div className="bg-gradient-to-br from-cyan-50 to-cyan-100 rounded-xl shadow-lg p-6 border border-cyan-200">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="bg-cyan-600 p-3 rounded-lg">
+                <Bot className="w-6 h-6 text-white" />
+              </div>
+              <h2 className="text-xl font-bold text-gray-900">Chatbot Tools</h2>
+            </div>
+            <p className="text-gray-700 mb-4">Access AI-powered chatbot tools to automate customer interactions and support.</p>
+            <button onClick={() => toast.info('Will be implemented soon')} className="bg-cyan-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-cyan-700 transition-colors w-full">
+              Launch Chatbot
             </button>
           </div>
         </div>

@@ -1,8 +1,8 @@
 "use client"
 
 import { useState, useEffect, useMemo } from "react"
-import { useRouter } from "next/navigation"
-import { Lock, Unlock, Search, Eye, Filter, Calendar } from "lucide-react"
+import { useRouter, useSearchParams } from "next/navigation"
+import { Lock, Unlock, Search, Download, Filter, Calendar, Linkedin, Instagram, Facebook, Globe, MapPin } from "lucide-react"
 import { toast } from "sonner"
 import Navbar from "../components/Navbar"
 import Footer from "../components/Footer"
@@ -31,6 +31,7 @@ interface Lead {
 
 export default function LeadsPage() {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const [leads, setLeads] = useState<Lead[]>([])
   const [accessedLeads, setAccessedLeads] = useState<Lead[]>([])
   const [loading, setLoading] = useState(true)
@@ -95,6 +96,57 @@ export default function LeadsPage() {
     }
   }
 
+  const handleExportLead = async (leadId: string) => {
+    try {
+      const response = await Axios.post('/auth/leads/export', { leadId }, {
+        responseType: 'blob'
+      })
+      
+      const url = window.URL.createObjectURL(new Blob([response.data]))
+      const link = document.createElement('a')
+      link.href = url
+      link.setAttribute('download', `lead_${leadId}_${Date.now()}.xlsx`)
+      document.body.appendChild(link)
+      link.click()
+      link.remove()
+      window.URL.revokeObjectURL(url)
+      
+      toast.success('Lead data exported successfully!')
+    } catch (error: any) {
+      toast.error(error.response?.data?.error || 'Failed to export lead data')
+    }
+  }
+
+  const handleBulkExport = async () => {
+    const accessedLeadIds = filteredLeads
+      .filter(lead => activeTab === 'accessed' || lead.isAccessedByUser)
+      .map(lead => lead.id)
+    
+    if (accessedLeadIds.length === 0) {
+      toast.error('No accessed leads to export')
+      return
+    }
+    
+    try {
+      const response = await Axios.post('/auth/leads/bulk-export', { leadIds: accessedLeadIds }, {
+        responseType: 'blob'
+      })
+      
+      const url = window.URL.createObjectURL(new Blob([response.data]))
+      const link = document.createElement('a')
+      link.href = url
+      link.setAttribute('download', `leads_export_${Date.now()}.xlsx`)
+      document.body.appendChild(link)
+      link.click()
+      link.remove()
+      window.URL.revokeObjectURL(url)
+      
+      toast.success(`${accessedLeadIds.length} leads exported successfully!`)
+    } catch (error: any) {
+      toast.error(error.response?.data?.error || 'Failed to export leads data')
+    }
+  }
+
   const handleSelectLead = (id: string, isAccessedByUser: boolean) => {
     if (isAccessedByUser) return
     if (selectedLeads.includes(id)) {
@@ -108,10 +160,15 @@ export default function LeadsPage() {
     }
   }
 
+  // Handle URL parameters on page load
   useEffect(() => {
+    const tab = searchParams.get('tab')
+    if (tab === 'accessed') {
+      setActiveTab('accessed')
+    }
     loadLeads()
     loadAccessedLeads()
-  }, [])
+  }, [searchParams])
 
   useEffect(() => {
     if (activeTab === 'all') {
@@ -178,28 +235,45 @@ export default function LeadsPage() {
             <h1 className="text-2xl font-semibold text-gray-900">Leads</h1>
             <p className="text-sm text-gray-600 mt-1">Browse and access leads</p>
           </div>
-          {activeTab === 'all' && selectedLeads.length > 0 && (
-            <button
-              onClick={handleBulkAccess}
-              className="bg-gray-900 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-800 flex items-center gap-2"
-            >
-              <Unlock className="w-4 h-4" />
-              Unlock {selectedLeads.length} Lead{selectedLeads.length > 1 ? 's' : ''} ({selectedLeads.length} Token{selectedLeads.length > 1 ? 's' : ''})
-            </button>
-          )}
+          <div className="flex gap-2">
+            {activeTab === 'all' && selectedLeads.length > 0 && (
+              <button
+                onClick={handleBulkAccess}
+                className="bg-gray-900 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-800 flex items-center gap-2"
+              >
+                <Unlock className="w-4 h-4" />
+                Unlock {selectedLeads.length} Lead{selectedLeads.length > 1 ? 's' : ''} ({selectedLeads.length} Token{selectedLeads.length > 1 ? 's' : ''})
+              </button>
+            )}
+            {(activeTab === 'accessed' || filteredLeads.some(lead => lead.isAccessedByUser)) && (
+              <button
+                onClick={handleBulkExport}
+                className="bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-green-700 flex items-center gap-2"
+              >
+                <Download className="w-4 h-4" />
+                Export All Accessed
+              </button>
+            )}
+          </div>
         </div>
 
         <div className="bg-white rounded-lg border border-gray-200 mb-6">
           <div className="border-b border-gray-200">
             <div className="flex">
               <button
-                onClick={() => setActiveTab('all')}
+                onClick={() => {
+                  setActiveTab('all')
+                  router.push('/user/leads')
+                }}
                 className={`px-6 py-3 text-sm font-medium ${activeTab === 'all' ? 'text-gray-900 border-b-2 border-gray-900' : 'text-gray-500'}`}
               >
                 All Leads ({leads.length})
               </button>
               <button
-                onClick={() => setActiveTab('accessed')}
+                onClick={() => {
+                  setActiveTab('accessed')
+                  router.push('/user/leads?tab=accessed')
+                }}
                 className={`px-6 py-3 text-sm font-medium ${activeTab === 'accessed' ? 'text-gray-900 border-b-2 border-gray-900' : 'text-gray-500'}`}
               >
                 Accessed ({accessedLeads.length})
@@ -300,28 +374,32 @@ export default function LeadsPage() {
           <>
             <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
               <div className="overflow-x-auto">
-                <table className="w-full">
+                <table className="w-full min-w-[1400px]">
                   <thead className="bg-gray-50 border-b">
                     <tr>
                       {activeTab === 'all' && lockedLeads.length > 0 && (
-                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Select</th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase whitespace-nowrap">Select</th>
                       )}
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Lead ID</th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Name</th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Category</th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Email</th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Phone</th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Location</th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Website</th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">LinkedIn</th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Action</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase whitespace-nowrap">Lead ID</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase whitespace-nowrap">Name</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase whitespace-nowrap">Category</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase whitespace-nowrap">Email</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase whitespace-nowrap">Phone</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase whitespace-nowrap">Location</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase whitespace-nowrap">Address</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase whitespace-nowrap">Website</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase whitespace-nowrap">LinkedIn</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase whitespace-nowrap">Facebook</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase whitespace-nowrap">Instagram</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase whitespace-nowrap">Google Maps</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase whitespace-nowrap">Status</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase whitespace-nowrap">Action</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y">
                     {filteredLeads.length === 0 ? (
                       <tr>
-                        <td colSpan={activeTab === 'all' && lockedLeads.length > 0 ? 11 : 10} className="px-4 py-12 text-center text-sm text-gray-500">No leads found</td>
+                        <td colSpan={activeTab === 'all' && lockedLeads.length > 0 ? 15 : 14} className="px-4 py-12 text-center text-sm text-gray-500">No leads found</td>
                       </tr>
                     ) : (
                       filteredLeads.map((lead) => (
@@ -369,11 +447,7 @@ export default function LeadsPage() {
                           </td>
                           <td className="px-4 py-3 text-sm text-gray-600">
                             {activeTab === 'accessed' || lead.isAccessedByUser ? (
-                              lead.websiteLink ? (
-                                <a href={lead.websiteLink} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
-                                  Link
-                                </a>
-                              ) : '-'
+                              lead.addressStreet || '-'
                             ) : (
                               <span className="flex items-center gap-2">
                                 <Lock className="w-3 h-3 text-gray-400" />
@@ -383,15 +457,86 @@ export default function LeadsPage() {
                           </td>
                           <td className="px-4 py-3 text-sm text-gray-600">
                             {activeTab === 'accessed' || lead.isAccessedByUser ? (
-                              lead.linkedin ? (
-                                <a href={lead.linkedin} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
-                                  Link
+                              lead.websiteLink ? (
+                                <a href={lead.websiteLink} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:text-blue-800 flex items-center justify-center">
+                                  <Globe className="w-5 h-5" />
                                 </a>
-                              ) : '-'
+                              ) : (
+                                <span className="text-gray-400 flex items-center justify-center">
+                                  <Globe className="w-5 h-5" />
+                                </span>
+                              )
                             ) : (
-                              <span className="flex items-center gap-2">
-                                <Lock className="w-3 h-3 text-gray-400" />
-                                Hidden
+                              <span className="flex items-center justify-center">
+                                <Lock className="w-4 h-4 text-gray-400" />
+                              </span>
+                            )}
+                          </td>
+                          <td className="px-4 py-3 text-sm text-gray-600">
+                            {activeTab === 'accessed' || lead.isAccessedByUser ? (
+                              lead.linkedin ? (
+                                <a href={lead.linkedin} target="_blank" rel="noopener noreferrer" className="text-blue-700 hover:text-blue-900 flex items-center justify-center">
+                                  <Linkedin className="w-5 h-5" />
+                                </a>
+                              ) : (
+                                <span className="text-gray-400 flex items-center justify-center">
+                                  <Linkedin className="w-5 h-5" />
+                                </span>
+                              )
+                            ) : (
+                              <span className="flex items-center justify-center">
+                                <Lock className="w-4 h-4 text-gray-400" />
+                              </span>
+                            )}
+                          </td>
+                          <td className="px-4 py-3 text-sm text-gray-600">
+                            {activeTab === 'accessed' || lead.isAccessedByUser ? (
+                              lead.facebookLink ? (
+                                <a href={lead.facebookLink} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:text-blue-800 flex items-center justify-center">
+                                  <Facebook className="w-5 h-5" />
+                                </a>
+                              ) : (
+                                <span className="text-gray-400 flex items-center justify-center">
+                                  <Facebook className="w-5 h-5" />
+                                </span>
+                              )
+                            ) : (
+                              <span className="flex items-center justify-center">
+                                <Lock className="w-4 h-4 text-gray-400" />
+                              </span>
+                            )}
+                          </td>
+                          <td className="px-4 py-3 text-sm text-gray-600">
+                            {activeTab === 'accessed' || lead.isAccessedByUser ? (
+                              lead.instagram ? (
+                                <a href={lead.instagram.startsWith('http') ? lead.instagram : `https://instagram.com/${lead.instagram.replace('@', '')}`} target="_blank" rel="noopener noreferrer" className="text-pink-600 hover:text-pink-800 flex items-center justify-center">
+                                  <Instagram className="w-5 h-5" />
+                                </a>
+                              ) : (
+                                <span className="text-gray-400 flex items-center justify-center">
+                                  <Instagram className="w-5 h-5" />
+                                </span>
+                              )
+                            ) : (
+                              <span className="flex items-center justify-center">
+                                <Lock className="w-4 h-4 text-gray-400" />
+                              </span>
+                            )}
+                          </td>
+                          <td className="px-4 py-3 text-sm text-gray-600">
+                            {activeTab === 'accessed' || lead.isAccessedByUser ? (
+                              lead.googleMapLink ? (
+                                <a href={lead.googleMapLink} target="_blank" rel="noopener noreferrer" className="text-green-600 hover:text-green-800 flex items-center justify-center">
+                                  <MapPin className="w-5 h-5" />
+                                </a>
+                              ) : (
+                                <span className="text-gray-400 flex items-center justify-center">
+                                  <MapPin className="w-5 h-5" />
+                                </span>
+                              )
+                            ) : (
+                              <span className="flex items-center justify-center">
+                                <Lock className="w-4 h-4 text-gray-400" />
                               </span>
                             )}
                           </td>
@@ -409,11 +554,11 @@ export default function LeadsPage() {
                           <td className="px-4 py-3">
                             {activeTab === 'accessed' || lead.isAccessedByUser ? (
                               <button
-                                onClick={() => router.push(`/user/leads/${lead.id}`)}
-                                className="text-blue-600 hover:text-blue-800 text-sm font-medium flex items-center gap-1"
+                                onClick={() => handleExportLead(lead.id)}
+                                className="text-green-600 hover:text-green-800 text-sm font-medium flex items-center gap-1"
                               >
-                                <Eye className="w-4 h-4" />
-                                View
+                                <Download className="w-4 h-4" />
+                                Export Data
                               </button>
                             ) : (
                               <button

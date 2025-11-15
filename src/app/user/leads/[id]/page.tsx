@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { useParams, useRouter } from "next/navigation"
-import { ArrowLeft } from "lucide-react"
+import { ArrowLeft, Download } from "lucide-react"
 import { toast } from "sonner"
 import Navbar from "../../components/Navbar"
 import Footer from "../../components/Footer"
@@ -32,6 +32,29 @@ export default function LeadDetailPage() {
   const router = useRouter()
   const [lead, setLead] = useState<LeadDetail | null>(null)
   const [loading, setLoading] = useState(true)
+
+  const handleExportLead = async () => {
+    if (!lead) return
+    
+    try {
+      const response = await Axios.post('/auth/leads/export', { leadId: lead.id }, {
+        responseType: 'blob'
+      })
+      
+      const url = window.URL.createObjectURL(new Blob([response.data]))
+      const link = document.createElement('a')
+      link.href = url
+      link.setAttribute('download', `lead_${lead.leadId}_${Date.now()}.xlsx`)
+      document.body.appendChild(link)
+      link.click()
+      link.remove()
+      window.URL.revokeObjectURL(url)
+      
+      toast.success('Lead data exported successfully!')
+    } catch (error: any) {
+      toast.error(error.response?.data?.error || 'Failed to export lead data')
+    }
+  }
 
   useEffect(() => {
     loadLead()
@@ -85,11 +108,20 @@ export default function LeadDetailPage() {
               <h1 className="text-2xl font-semibold text-gray-900">{lead.name}</h1>
               <p className="text-sm text-gray-600 mt-1">{lead.leadId}</p>
             </div>
-            {lead.category && (
-              <span className="bg-blue-50 text-blue-700 px-3 py-1 rounded-full text-sm font-medium border border-blue-200">
-                {lead.category}
-              </span>
-            )}
+            <div className="flex items-center gap-3">
+              {lead.category && (
+                <span className="bg-blue-50 text-blue-700 px-3 py-1 rounded-full text-sm font-medium border border-blue-200">
+                  {lead.category}
+                </span>
+              )}
+              <button
+                onClick={handleExportLead}
+                className="bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-green-700 flex items-center gap-2"
+              >
+                <Download className="w-4 h-4" />
+                Export Data
+              </button>
+            </div>
           </div>
         </div>
 
