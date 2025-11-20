@@ -49,7 +49,7 @@ export default function ProfilePage() {
     try {
       const response = await Axios.get('/auth/profile')
       setUserProfile(response.data)
-      setEditName(response.data.name)
+      setEditName(response.data.name || '')
       setEditPhone(response.data.phone || '')
       setAvatarPreview(response.data.avatar || '')
     } catch (error) {
@@ -247,7 +247,7 @@ export default function ProfilePage() {
                           <label className="block text-sm font-medium text-gray-600 mb-1">Full Name *</label>
                           <input
                             type="text"
-                            value={editName}
+                            value={editName || ''}
                             onChange={(e) => setEditName(e.target.value)}
                             className="w-full px-3 py-2 border text-black border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                           />
