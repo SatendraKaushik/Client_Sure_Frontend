@@ -339,24 +339,24 @@ export default function CommunityPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50">
+    <div className="min-h-screen bg-gray-50">
       <Navbar />
       
-      <div className="max-w-7xl mx-auto px-4 py-6">
-        <div className="flex gap-6">
+      <div className="max-w-7xl mx-auto px-4 py-8">
+        <div className="flex gap-8">
           {/* Main Content */}
           <div className="flex-1 max-w-4xl">
             {/* Header */}
-            <div className="bg-white rounded-2xl shadow-lg border border-gray-200 mb-6 overflow-hidden">
-              <div className="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 text-white p-6">
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 mb-6">
+              <div className="bg-white border-b border-gray-200 p-6">
                 <div className="flex items-center justify-between flex-wrap gap-4">
                   <div className="flex items-center gap-4">
-                    <div className="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center shadow-lg">
-                      <Users className="w-8 h-8" />
+                    <div className="w-12 h-12 bg-blue-600 rounded-lg flex items-center justify-center">
+                      <Users className="w-6 h-6 text-white" />
                     </div>
                     <div>
-                      <h1 className="text-2xl font-bold mb-1">Community Hub</h1>
-                      <p className="text-white/90 flex items-center gap-2">
+                      <h1 className="text-2xl font-bold text-gray-900 mb-1">Community</h1>
+                      <p className="text-gray-600 flex items-center gap-2 text-sm">
                         <MessageSquare className="w-4 h-4" />
                         {communityStats.totalPosts || 0} posts • 
                         <Users className="w-4 h-4 ml-1" />
@@ -373,26 +373,26 @@ export default function CommunityPage() {
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                         onKeyPress={(e) => e.key === 'Enter' && fetchData(false)}
-                        className="pl-10 pr-4 py-2.5 rounded-xl text-gray-900 w-64 bg-white/90 backdrop-blur-sm border-0 focus:outline-none focus:ring-2 focus:ring-white/50 shadow-lg"
+                        className="pl-10 pr-4 py-2 rounded-lg text-gray-900 w-64 bg-gray-50 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       />
-                      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 w-4 h-4" />
+                      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
                     </div>
                     <button
                       onClick={() => setShowAdvancedSearch(!showAdvancedSearch)}
-                      className={`px-4 py-2.5 rounded-xl font-medium transition-all shadow-lg flex items-center gap-2 ${
+                      className={`px-4 py-2 rounded-lg font-medium transition-all flex items-center gap-2 ${
                         showAdvancedSearch 
-                          ? 'bg-white text-indigo-600 hover:bg-gray-50' 
-                          : 'bg-white/20 hover:bg-white/30 text-white backdrop-blur-sm'
+                          ? 'bg-blue-600 text-white hover:bg-blue-700' 
+                          : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                       }`}
                     >
                       <Filter className="w-4 h-4" /> Filters
                     </button>
                     <button
                       onClick={() => { setShowTrending(!showTrending); fetchData(false); }}
-                      className={`px-4 py-2.5 rounded-xl font-medium transition-all shadow-lg flex items-center gap-2 ${
+                      className={`px-4 py-2 rounded-lg font-medium transition-all flex items-center gap-2 ${
                         showTrending 
-                          ? 'bg-yellow-400 text-gray-900 hover:bg-yellow-300' 
-                          : 'bg-white/20 hover:bg-white/30 text-white backdrop-blur-sm'
+                          ? 'bg-orange-500 text-white hover:bg-orange-600' 
+                          : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                       }`}
                     >
                       {showTrending ? <><TrendingUp className="w-4 h-4" /> Trending</> : <><Calendar className="w-4 h-4" /> Latest</>}
@@ -402,7 +402,7 @@ export default function CommunityPage() {
                         fetchData(false)
                         toast.success('Community refreshed!')
                       }}
-                      className="p-2.5 rounded-xl transition-all shadow-lg bg-white/20 hover:bg-white/30 text-white backdrop-blur-sm"
+                      className="p-2 rounded-lg transition-all bg-gray-100 text-gray-700 hover:bg-gray-200"
                       title="Refresh community posts"
                     >
                       <RefreshCw className="w-5 h-5" />
@@ -414,10 +414,10 @@ export default function CommunityPage() {
 
             {/* Advanced Search Filters */}
             {showAdvancedSearch && (
-              <div className="bg-white rounded-2xl shadow-lg border border-gray-200 mb-6 overflow-hidden">
+              <div className="bg-white rounded-lg shadow-sm border border-gray-200 mb-6">
                 <div className="p-6">
-                  <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
-                    <Filter className="w-5 h-5 text-indigo-600" /> Advanced Filters
+                  <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                    <Filter className="w-5 h-5 text-blue-600" /> Advanced Filters
                   </h3>
                   
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -483,13 +483,13 @@ export default function CommunityPage() {
                   <div className="flex items-center gap-3 mt-6">
                     <button
                       onClick={() => fetchData(false)}
-                      className="px-6 py-3 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white rounded-xl font-semibold transition-all shadow-lg"
+                      className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors"
                     >
                       Apply Filters
                     </button>
                     <button
                       onClick={resetFilters}
-                      className="px-6 py-3 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-xl font-semibold transition-colors"
+                      className="px-6 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg font-medium transition-colors"
                     >
                       Reset
                     </button>
@@ -499,30 +499,30 @@ export default function CommunityPage() {
             )}
 
             {/* Create Post */}
-            <div className="bg-white rounded-2xl shadow-lg border border-gray-200 mb-6 overflow-hidden">
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 mb-6">
               {showCreatePost ? (
                 <form onSubmit={createPost} className="p-6">
-                  <div className="flex items-center gap-4 mb-4">
-                    <div className="w-12 h-12 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center text-white font-bold shadow-lg">
-                      <Edit3 className="w-6 h-6" />
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center text-white">
+                      <Edit3 className="w-5 h-5" />
                     </div>
-                    <div className="text-lg font-semibold text-gray-800">Share your thoughts</div>
+                    <div className="text-lg font-semibold text-gray-900">Create Post</div>
                   </div>
                   
                   <div className="space-y-4">
                     <input
                       type="text"
-                      placeholder="What's on your mind?"
+                      placeholder="Post title"
                       value={newPost.title}
                       onChange={(e) => setNewPost({ ...newPost, title: e.target.value })}
-                      className="w-full p-4 border-2 border-gray-200 rounded-xl text-gray-900 focus:border-indigo-500 focus:outline-none transition-colors bg-gray-50 focus:bg-white"
+                      className="w-full p-3 border border-gray-300 rounded-lg text-gray-900 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-colors"
                       required
                     />
                     <textarea
-                      placeholder="Share your thoughts with the community..."
+                      placeholder="What's on your mind?"
                       value={newPost.description}
                       onChange={(e) => setNewPost({ ...newPost, description: e.target.value })}
-                      className="w-full p-4 border-2 border-gray-200 rounded-xl text-gray-900 h-32 resize-none focus:border-indigo-500 focus:outline-none transition-colors bg-gray-50 focus:bg-white"
+                      className="w-full p-3 border border-gray-300 rounded-lg text-gray-900 h-32 resize-none focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-colors"
                       required
                     />
                     
@@ -571,14 +571,14 @@ export default function CommunityPage() {
                         <button
                           type="button"
                           onClick={() => setShowCreatePost(false)}
-                          className="px-6 py-3 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-xl font-semibold transition-colors"
+                          className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg font-medium transition-colors"
                         >
                           Cancel
                         </button>
                         <button 
                           type="submit"
                           disabled={isSubmitting}
-                          className="px-6 py-3 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white rounded-xl font-semibold transition-all shadow-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                          className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                         >
                           {isSubmitting ? (
                             <><RefreshCw className="w-4 h-4 animate-spin" /> Posting...</>
@@ -618,13 +618,13 @@ export default function CommunityPage() {
                 <div className="p-6">
                   <button
                     onClick={() => setShowCreatePost(true)}
-                    className="w-full flex items-center gap-4 p-4 bg-gradient-to-r from-gray-50 to-gray-100 hover:from-indigo-50 hover:to-purple-50 rounded-xl transition-all border-2 border-dashed border-gray-300 hover:border-indigo-300"
+                    className="w-full flex items-center gap-3 p-4 bg-gray-50 hover:bg-gray-100 rounded-lg transition-all border border-gray-200 hover:border-gray-300"
                   >
-                    <div className="w-12 h-12 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center text-white shadow-lg">
-                      <Edit3 className="w-6 h-6" />
+                    <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center text-white">
+                      <Edit3 className="w-5 h-5" />
                     </div>
                     <div className="text-left">
-                      <div className="font-semibold text-gray-800">Start a discussion</div>
+                      <div className="font-medium text-gray-900">What's on your mind?</div>
                       <div className="text-sm text-gray-600">Share your thoughts with the community</div>
                     </div>
                   </button>
@@ -635,23 +635,23 @@ export default function CommunityPage() {
             {/* Posts */}
             <div className="space-y-6">
               {posts.length === 0 ? (
-                <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-12 text-center">
+                <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-12 text-center">
                   <MessageCircle className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-                  <h3 className="text-2xl font-bold text-gray-800 mb-2">No discussions yet</h3>
+                  <h3 className="text-xl font-semibold text-gray-900 mb-2">No posts yet</h3>
                   <p className="text-gray-600">Be the first to start a conversation!</p>
                 </div>
               ) : (
                 posts.map((post) => (
-                  <div key={post._id} className="bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden hover:shadow-xl transition-all duration-300">
+                  <div key={post._id} className="bg-white rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-shadow duration-200">
                     <div className="p-6">
                       {/* Post Header */}
                       <div className="flex items-center justify-between mb-4">
-                        <div className="flex items-center gap-4">
-                          <div className="w-14 h-14 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center text-white font-bold shadow-lg text-lg">
+                        <div className="flex items-center gap-3">
+                          <div className="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center text-white font-semibold">
                             {post.user_id.name.charAt(0).toUpperCase()}
                           </div>
                           <div>
-                            <div className="font-bold text-gray-900 text-lg">{post.user_id.name}</div>
+                            <div className="font-semibold text-gray-900">{post.user_id.name}</div>
                             <div className="text-sm text-gray-500">
                               {getTimeAgo(post.createdAt)}
                             </div>
@@ -660,31 +660,31 @@ export default function CommunityPage() {
                         {post.user_id._id === currentUserId && (
                           <button
                             onClick={() => deletePost(post._id)}
-                            className="text-red-500 hover:text-red-700 hover:bg-red-50 p-2 rounded-xl transition-colors"
+                            className="text-gray-400 hover:text-red-500 hover:bg-red-50 p-2 rounded-lg transition-colors"
                           >
-                            <Trash2 className="w-5 h-5" />
+                            <Trash2 className="w-4 h-4" />
                           </button>
                         )}
                       </div>
                       
                       {/* Post Content */}
-                      <div className="mb-6">
-                        <h3 className="font-bold text-gray-900 text-xl mb-3">{post.post_title}</h3>
-                        <p className="text-gray-700 leading-relaxed text-lg">{post.description}</p>
+                      <div className="mb-4">
+                        <h3 className="font-semibold text-gray-900 text-lg mb-2">{post.post_title}</h3>
+                        <p className="text-gray-700 leading-relaxed">{post.description}</p>
                         
                         {post.image && (
-                          <div className="mt-4">
+                          <div className="mt-3">
                             <img 
                               src={post.image} 
                               alt="Post image" 
-                              className="rounded-xl max-w-full h-auto max-h-96 object-cover shadow-lg"
+                              className="rounded-lg max-w-full h-auto max-h-80 object-cover border border-gray-200"
                             />
                           </div>
                         )}
                       </div>
                       
                       {/* Post Actions */}
-                      <div className="flex items-center gap-6 mb-6 pb-4 border-b border-gray-100">
+                      <div className="flex items-center gap-4 mb-4 pb-4 border-b border-gray-100">
                         <button
                           onClick={() => {
                             if (isLikedByUser(post)) {
@@ -693,51 +693,48 @@ export default function CommunityPage() {
                               likePost(post._id)
                             }
                           }}
-                          className={`flex items-center gap-2 px-4 py-2 rounded-xl transition-all font-medium ${
+                          className={`flex items-center gap-2 px-3 py-1.5 rounded-lg transition-all text-sm font-medium ${
                             isLikedByUser(post) 
                               ? 'bg-red-50 text-red-600 hover:bg-red-100' 
-                              : 'bg-gray-50 text-gray-600 hover:bg-gray-100'
+                              : 'text-gray-600 hover:bg-gray-50'
                           }`}
                         >
-                          <Heart className={`w-5 h-5 ${isLikedByUser(post) ? 'fill-current' : ''}`} />
+                          <Heart className={`w-4 h-4 ${isLikedByUser(post) ? 'fill-current' : ''}`} />
                           <span>{post.likes.length}</span>
                         </button>
-                        <div className="flex items-center gap-2 text-gray-500 font-medium">
-                          <MessageCircle className="w-5 h-5" />
-                          <span>{post.comments.length}</span>
+                        <div className="flex items-center gap-2 text-gray-500 text-sm">
+                          <MessageCircle className="w-4 h-4" />
+                          <span>{post.comments.length} comments</span>
                         </div>
                       </div>
 
                       {/* Comments Section */}
                       {post.comments.length > 0 && (
-                        <div className="space-y-4 mb-6">
-                          <h4 className="font-semibold text-gray-800 flex items-center gap-2">
-                            <MessageCircle className="w-5 h-5 text-indigo-600" />
-                            Comments ({post.comments.length})
-                          </h4>
+                        <div className="space-y-3 mb-4">
+                          <h4 className="font-medium text-gray-900 text-sm">Comments</h4>
                           {post.comments
                             .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
                             .map((comment) => (
-                            <div key={comment._id} className="bg-gray-50 rounded-xl p-4 border border-gray-100">
+                            <div key={comment._id} className="bg-gray-50 rounded-lg p-3">
                               <div className="flex justify-between items-start">
                                 <div className="flex-1">
-                                  <div className="flex items-center gap-3 mb-2">
-                                    <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-lg flex items-center justify-center text-white font-bold text-sm">
+                                  <div className="flex items-center gap-2 mb-1">
+                                    <div className="w-6 h-6 bg-blue-600 rounded-full flex items-center justify-center text-white font-medium text-xs">
                                       {comment.user_id.name.charAt(0).toUpperCase()}
                                     </div>
-                                    <span className="font-semibold text-gray-900">{comment.user_id.name}</span>
+                                    <span className="font-medium text-gray-900 text-sm">{comment.user_id.name}</span>
                                     <span className="text-xs text-gray-500">
                                       {getTimeAgo(comment.createdAt)}
                                     </span>
                                   </div>
-                                  <p className="text-gray-700 ml-11">{comment.text}</p>
+                                  <p className="text-gray-700 text-sm ml-8">{comment.text}</p>
                                 </div>
                                 {comment.user_id._id === currentUserId && (
                                   <button
                                     onClick={() => deleteComment(comment._id)}
-                                    className="text-red-500 hover:text-red-700 p-2 rounded-lg hover:bg-red-50 transition-colors"
+                                    className="text-gray-400 hover:text-red-500 p-1 rounded transition-colors"
                                   >
-                                    <Trash2 className="w-4 h-4" />
+                                    <Trash2 className="w-3 h-3" />
                                   </button>
                                 )}
                               </div>
@@ -748,20 +745,20 @@ export default function CommunityPage() {
 
                       {/* Add Comment */}
                       <div className="flex gap-3">
-                        <div className="w-10 h-10 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg flex items-center justify-center text-white font-bold flex-shrink-0">
-                          <MessageCircle className="w-5 h-5" />
+                        <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-white flex-shrink-0">
+                          <MessageCircle className="w-4 h-4" />
                         </div>
                         <input
                           type="text"
                           placeholder="Write a comment..."
                           value={commentTexts[post._id] || ''}
                           onChange={(e) => setCommentTexts({ ...commentTexts, [post._id]: e.target.value })}
-                          className="flex-1 p-3 border-2 border-gray-200 rounded-xl text-gray-900 bg-gray-50 focus:bg-white focus:border-indigo-500 focus:outline-none transition-colors"
+                          className="flex-1 p-2 border border-gray-300 rounded-lg text-gray-900 bg-white focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-colors text-sm"
                           onKeyPress={(e) => e.key === 'Enter' && addComment(post._id)}
                         />
                         <button
                           onClick={() => addComment(post._id)}
-                          className="bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white px-4 py-3 rounded-xl font-medium transition-all shadow-lg flex items-center gap-2"
+                          className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded-lg font-medium transition-colors flex items-center gap-1 text-sm"
                         >
                           <Send className="w-4 h-4" />
                         </button>
@@ -774,24 +771,24 @@ export default function CommunityPage() {
           </div>
 
           {/* Leaderboard Sidebar */}
-          <div className="w-80 bg-white rounded-2xl shadow-lg border border-gray-200 h-fit sticky top-6">
-            <div className="bg-gradient-to-r from-yellow-400 via-orange-500 to-red-500 text-white p-6 rounded-t-2xl">
-              <h2 className="text-xl font-bold flex items-center gap-2">
-                <Award className="w-6 h-6" /> Leaderboard
+          <div className="w-80 bg-white rounded-lg shadow-sm border border-gray-200 h-fit sticky top-8">
+            <div className="bg-white border-b border-gray-200 p-6 rounded-t-lg">
+              <h2 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+                <Award className="w-5 h-5 text-yellow-500" /> Leaderboard
               </h2>
-              <p className="text-white/90 text-sm mt-1">Top community members</p>
-              <div className="mt-3 grid grid-cols-2 gap-4 text-sm">
-                <div className="bg-white/20 rounded-lg p-2 text-center backdrop-blur-sm">
-                  <div className="font-bold flex items-center justify-center gap-1">
-                    <MessageCircle className="w-4 h-4" /> {communityStats.totalComments || 0}
+              <p className="text-gray-600 text-sm mt-1">Top community members</p>
+              <div className="mt-4 grid grid-cols-2 gap-3 text-sm">
+                <div className="bg-gray-50 rounded-lg p-3 text-center">
+                  <div className="font-semibold text-gray-900 flex items-center justify-center gap-1">
+                    <MessageCircle className="w-4 h-4 text-blue-600" /> {communityStats.totalComments || 0}
                   </div>
-                  <div className="text-xs opacity-90">Comments</div>
+                  <div className="text-xs text-gray-600">Comments</div>
                 </div>
-                <div className="bg-white/20 rounded-lg p-2 text-center backdrop-blur-sm">
-                  <div className="font-bold flex items-center justify-center gap-1">
-                    <Heart className="w-4 h-4" /> {communityStats.totalLikes || 0}
+                <div className="bg-gray-50 rounded-lg p-3 text-center">
+                  <div className="font-semibold text-gray-900 flex items-center justify-center gap-1">
+                    <Heart className="w-4 h-4 text-red-500" /> {communityStats.totalLikes || 0}
                   </div>
-                  <div className="text-xs opacity-90">Likes</div>
+                  <div className="text-xs text-gray-600">Likes</div>
                 </div>
               </div>
             </div>
@@ -800,31 +797,31 @@ export default function CommunityPage() {
               {leaderboard.length === 0 ? (
                 <div className="text-center py-8">
                   <Award className="w-12 h-12 text-gray-400 mx-auto mb-2" />
-                  <p className="text-gray-500">No rankings yet</p>
+                  <p className="text-gray-500 text-sm">No rankings yet</p>
                 </div>
               ) : (
-                <div className="space-y-3">
+                <div className="space-y-2">
                   {leaderboard.map((user, index) => (
-                    <div key={user._id} className="flex items-center gap-3 p-3 hover:bg-gray-50 rounded-xl transition-colors">
-                      <div className={`text-sm font-bold w-10 h-10 rounded-xl flex items-center justify-center ${
-                        index === 0 ? 'bg-yellow-100 text-yellow-600' :
-                        index === 1 ? 'bg-gray-100 text-gray-600' :
-                        index === 2 ? 'bg-orange-100 text-orange-600' :
-                        'bg-blue-50 text-blue-600'
+                    <div key={user._id} className="flex items-center gap-3 p-3 hover:bg-gray-50 rounded-lg transition-colors">
+                      <div className={`text-xs font-semibold w-6 h-6 rounded-full flex items-center justify-center ${
+                        index === 0 ? 'bg-yellow-100 text-yellow-700' :
+                        index === 1 ? 'bg-gray-100 text-gray-700' :
+                        index === 2 ? 'bg-orange-100 text-orange-700' :
+                        'bg-blue-50 text-blue-700'
                       }`}>
-                        #{index + 1}
+                        {index + 1}
                       </div>
-                      <div className="w-12 h-12 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center text-white font-bold">
+                      <div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center text-white font-semibold text-sm">
                         {user.name.charAt(0).toUpperCase()}
                       </div>
                       <div className="flex-1">
-                        <div className="font-semibold text-gray-900">{user.name}</div>
-                        <div className="text-sm text-gray-500 flex items-center gap-1">
-                          <Sparkles className="w-3 h-3" /> {user.points} pts
+                        <div className="font-medium text-gray-900 text-sm">{user.name}</div>
+                        <div className="text-xs text-gray-500 flex items-center gap-1">
+                          <Sparkles className="w-3 h-3" /> {user.points} points
                         </div>
                       </div>
                       {index < 3 && (
-                        <Award className={`w-6 h-6 ${
+                        <Award className={`w-4 h-4 ${
                           index === 0 ? 'text-yellow-500' :
                           index === 1 ? 'text-gray-400' :
                           'text-orange-500'

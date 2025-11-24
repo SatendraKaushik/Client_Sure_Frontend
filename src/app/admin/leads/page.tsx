@@ -209,8 +209,9 @@ export default function LeadsPage() {
         src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js" 
         strategy="beforeInteractive"
       />
-      <div className="min-h-screen bg-gray-100 flex">
-        <AdminSidebar />
+      <div className="min-h-screen bg-gray-50">
+        <div className="flex">
+          <AdminSidebar />
       
       {uploading && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
@@ -220,8 +221,10 @@ export default function LeadsPage() {
           </div>
         </div>
       )}
-      
-      <div className="flex-1 p-8">
+          
+          <div className="flex-1 min-w-0 overflow-hidden">
+            <div className="h-screen overflow-y-auto">
+              <div className="p-6 lg:p-8">
         <div className="flex items-center justify-between mb-6">
           <div>
             <h2 className="text-2xl font-semibold text-gray-900">Leads Management</h2>
@@ -275,11 +278,11 @@ export default function LeadsPage() {
                   toast.error('Excel library not loaded. Please refresh the page.')
                 }
               }}
-              className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 flex items-center gap-2 text-sm"
+              className="bg-blue-600 text-white px-4 py-2.5 rounded-lg hover:bg-blue-700 flex items-center gap-2 text-sm font-medium transition-colors shadow-sm"
             >
               Download Template
             </button>
-            <label className="bg-gray-900 text-white px-4 py-2 rounded-lg cursor-pointer hover:bg-gray-800 flex items-center gap-2">
+            <label className="bg-gray-900 text-white px-4 py-2.5 rounded-lg cursor-pointer hover:bg-gray-800 flex items-center gap-2 text-sm font-medium transition-colors shadow-sm">
               <Upload className="w-4 h-4" />
               Upload Excel
               <input type="file" accept=".xlsx,.xls,.csv" onChange={handleFileUpload} className="hidden" disabled={uploading} />
@@ -287,45 +290,94 @@ export default function LeadsPage() {
           </div>
         </div>
 
-        <div className="bg-white rounded-lg border border-gray-200 p-4 mb-6">
-          <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-            <div className="relative">
-              <Search className="absolute left-3 top-2.5 w-5 h-5 text-gray-400" />
-              <input type="text" placeholder="Search..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg text-sm text-gray-900 placeholder-gray-400" />
-            </div>
-            <select value={filterCategory} onChange={(e) => setFilterCategory(e.target.value)} className="px-3 py-2 border border-gray-300 rounded-lg text-sm text-gray-900">
-              <option value="">All Categories</option>
-              {categories.map(category => <option key={category} value={category}>{category}</option>)}
-            </select>
-            <select value={filterCity} onChange={(e) => setFilterCity(e.target.value)} className="px-3 py-2 border border-gray-300 rounded-lg text-sm text-gray-900">
-              <option value="">All Cities</option>
-              {cities.map(city => <option key={city} value={city}>{city}</option>)}
-            </select>
-            <select value={filterCountry} onChange={(e) => setFilterCountry(e.target.value)} className="px-3 py-2 border border-gray-300 rounded-lg text-sm text-gray-900">
-              <option value="">All Countries</option>
-              {countries.map(country => <option key={country} value={country}>{country}</option>)}
-            </select>
-            <button onClick={() => setShowDuplicates(!showDuplicates)} className={`px-3 py-2 rounded-lg text-sm font-medium flex items-center justify-center gap-2 ${showDuplicates ? 'bg-red-100 text-red-700 border border-red-300' : 'bg-gray-100 text-gray-700 border border-gray-300'}`}>
-              <AlertTriangle className="w-4 h-4" />
-              Duplicates ({duplicates.length})
-            </button>
-          </div>
-        </div>
+                <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 mb-6">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+                    <div className="relative">
+                      <Search className="absolute left-3 top-2.5 w-5 h-5 text-gray-400" />
+                      <input 
+                        type="text" 
+                        placeholder="Search leads..." 
+                        value={searchTerm} 
+                        onChange={(e) => setSearchTerm(e.target.value)} 
+                        className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg text-sm text-gray-900 placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors" 
+                      />
+                    </div>
+                    <select 
+                      value={filterCategory} 
+                      onChange={(e) => setFilterCategory(e.target.value)} 
+                      className="px-3 py-2.5 border border-gray-300 rounded-lg text-sm text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                    >
+                      <option value="">All Categories</option>
+                      {categories.map(category => <option key={category} value={category}>{category}</option>)}
+                    </select>
+                    <select 
+                      value={filterCity} 
+                      onChange={(e) => setFilterCity(e.target.value)} 
+                      className="px-3 py-2.5 border border-gray-300 rounded-lg text-sm text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                    >
+                      <option value="">All Cities</option>
+                      {cities.map(city => <option key={city} value={city}>{city}</option>)}
+                    </select>
+                    <select 
+                      value={filterCountry} 
+                      onChange={(e) => setFilterCountry(e.target.value)} 
+                      className="px-3 py-2.5 border border-gray-300 rounded-lg text-sm text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                    >
+                      <option value="">All Countries</option>
+                      {countries.map(country => <option key={country} value={country}>{country}</option>)}
+                    </select>
+                    <button 
+                      onClick={() => setShowDuplicates(!showDuplicates)} 
+                      className={`px-3 py-2.5 rounded-lg text-sm font-medium flex items-center justify-center gap-2 transition-colors ${
+                        showDuplicates 
+                          ? 'bg-red-100 text-red-700 border border-red-300 hover:bg-red-200' 
+                          : 'bg-gray-100 text-gray-700 border border-gray-300 hover:bg-gray-200'
+                      }`}
+                    >
+                      <AlertTriangle className="w-4 h-4" />
+                      Duplicates ({duplicates.length})
+                    </button>
+                  </div>
+                </div>
 
-        <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
-          {totalPages > 1 && (
-            <div className="px-4 py-3 border-b flex items-center justify-between bg-gray-50">
-              <div className="flex gap-2">
-                <button onClick={() => setPage(1)} disabled={page === 1} className="px-3 py-1 text-sm font-medium text-gray-700 bg-white border rounded hover:bg-gray-50 disabled:opacity-50">First</button>
-                <button onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1} className="px-3 py-1 text-sm font-medium text-gray-700 bg-white border rounded hover:bg-gray-50 disabled:opacity-50">Prev</button>
-              </div>
-              <span className="text-sm text-gray-700">Page {page} of {totalPages}</span>
-              <div className="flex gap-2">
-                <button onClick={() => setPage(p => Math.min(totalPages, p + 1))} disabled={page === totalPages} className="px-3 py-1 text-sm font-medium text-gray-700 bg-white border rounded hover:bg-gray-50 disabled:opacity-50">Next</button>
-                <button onClick={() => setPage(totalPages)} disabled={page === totalPages} className="px-3 py-1 text-sm font-medium text-gray-700 bg-white border rounded hover:bg-gray-50 disabled:opacity-50">Last</button>
-              </div>
-            </div>
-          )}
+                <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                  {totalPages > 1 && (
+                    <div className="px-4 py-3 border-b flex flex-col sm:flex-row items-center justify-between gap-3 bg-gray-50">
+                      <div className="flex gap-2">
+                        <button 
+                          onClick={() => setPage(1)} 
+                          disabled={page === 1} 
+                          className="px-3 py-1.5 text-sm font-medium text-gray-700 bg-white border rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                        >
+                          First
+                        </button>
+                        <button 
+                          onClick={() => setPage(p => Math.max(1, p - 1))} 
+                          disabled={page === 1} 
+                          className="px-3 py-1.5 text-sm font-medium text-gray-700 bg-white border rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                        >
+                          Prev
+                        </button>
+                      </div>
+                      <span className="text-sm font-medium text-gray-700">Page {page} of {totalPages}</span>
+                      <div className="flex gap-2">
+                        <button 
+                          onClick={() => setPage(p => Math.min(totalPages, p + 1))} 
+                          disabled={page === totalPages} 
+                          className="px-3 py-1.5 text-sm font-medium text-gray-700 bg-white border rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                        >
+                          Next
+                        </button>
+                        <button 
+                          onClick={() => setPage(totalPages)} 
+                          disabled={page === totalPages} 
+                          className="px-3 py-1.5 text-sm font-medium text-gray-700 bg-white border rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                        >
+                          Last
+                        </button>
+                      </div>
+                    </div>
+                  )}
 
           <div className="overflow-x-auto">
             <table className="w-full min-w-[1600px]">
@@ -431,6 +483,10 @@ export default function LeadsPage() {
                 )}
               </tbody>
             </table>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -491,7 +547,6 @@ export default function LeadsPage() {
           </div>
         </div>
       )}
-      </div>
     </>
   )
 }

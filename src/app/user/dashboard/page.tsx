@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect, Suspense } from "react"
-import { Lock, FileText, Play, AlertTriangle, Database, Users, ExternalLink, MessageCircle, Bot } from "lucide-react"
+import { Lock, FileText, Play, AlertTriangle, Database, Users, ExternalLink, MessageCircle, Bot, Zap, Plus, X } from "lucide-react"
 import { useSearchParams, useRouter } from "next/navigation"
 import { toast } from "sonner"
 import Navbar from "../components/Navbar"
@@ -44,6 +44,7 @@ function DashboardContent() {
   const [resources, setResources] = useState<Resource[]>([])
   const [loading, setLoading] = useState(true)
   const [showWelcome, setShowWelcome] = useState(false)
+  const [showLowTokenAlert, setShowLowTokenAlert] = useState(false)
   const searchParams = useSearchParams()
 
   useEffect(() => {
@@ -62,7 +63,7 @@ function DashboardContent() {
   const loadUserStats = async () => {
     try {
       const response = await Axios.get('/auth/profile')
-      setUserStats({
+      const newStats = {
         tokens: response.data.tokens.daily,
         tokensUsedTotal: response.data.tokens.totalUsed,
         tokensUsedToday: response.data.tokens.dailyUsed,
@@ -78,7 +79,14 @@ function DashboardContent() {
           endDate: response.data.subscription.endDate,
           monthlyAllocation: response.data.tokens.monthlyTotal
         }
-      })
+      }
+      
+      // Check for low tokens (0 or very low)
+      if (newStats.tokens <= 0 && newStats.subscription.isActive) {
+        setShowLowTokenAlert(true)
+      }
+      
+      setUserStats(newStats)
     } catch (error) {
       console.error('Error loading user stats:', error)
     }
@@ -123,6 +131,62 @@ function DashboardContent() {
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
       <Navbar />
       
+      {/* Low Token Alert Popup */}
+      {showLowTokenAlert && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 relative">
+            <button
+              onClick={() => setShowLowTokenAlert(false)}
+              className="absolute top-4 right-4 p-2 hover:bg-gray-100 rounded-full transition-colors"
+            >
+              <X className="w-5 h-5 text-gray-500" />
+            </button>
+            
+            <div className="text-center">
+              <div className="w-16 h-16 bg-gradient-to-br from-orange-500 to-red-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Zap className="w-8 h-8 text-white" />
+              </div>
+              
+              <h3 className="text-xl font-bold text-gray-900 mb-2">Tokens Exhausted!</h3>
+              <p className="text-gray-600 mb-6">
+                You've used all your daily tokens. Purchase more tokens to continue accessing leads and resources.
+              </p>
+              
+              <div className="bg-gradient-to-r from-orange-50 to-red-50 rounded-lg p-4 mb-6">
+                <div className="flex items-center justify-center gap-2 text-orange-700">
+                  <Zap className="w-5 h-5" />
+                  <span className="font-semibold">Current Balance: {userStats?.tokens || 0} tokens</span>
+                </div>
+              </div>
+              
+              <div className="space-y-3">
+                <button
+                  onClick={() => {
+                    setShowLowTokenAlert(false)
+                    router.push('/user/profile/tokens')
+                  }}
+                  className="w-full bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 text-white py-3 px-4 rounded-lg font-semibold transition-all flex items-center justify-center gap-2"
+                >
+                  <Plus className="w-5 h-5" />
+                  Buy More Tokens
+                </button>
+                
+                <button
+                  onClick={() => setShowLowTokenAlert(false)}
+                  className="w-full bg-gray-100 hover:bg-gray-200 text-gray-700 py-2 px-4 rounded-lg font-medium transition-colors"
+                >
+                  Maybe Later
+                </button>
+              </div>
+              
+              <div className="mt-4 text-xs text-gray-500">
+                💡 Tokens reset daily at 1:00 AM
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+      
       {/* Hero Section */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
 
@@ -151,10 +215,28 @@ function DashboardContent() {
 
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-12">
-          <div className="bg-white rounded-xl shadow-lg p-6 text-center">
-            <div className="text-3xl font-bold text-blue-600 mb-2">{userStats?.tokens || 0}</div>
+          <div className={`bg-white rounded-xl shadow-lg p-6 text-center relative ${
+            (userStats?.tokens || 0) <= 5 ? 'ring-2 ring-orange-500 ring-opacity-50' : ''
+          }`}>
+            {(userStats?.tokens || 0) <= 5 && (
+              <div className="absolute -top-2 -right-2 bg-orange-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold">
+                !
+              </div>
+            )}
+            <div className={`text-3xl font-bold mb-2 ${
+              (userStats?.tokens || 0) <= 0 ? 'text-red-600' : 
+              (userStats?.tokens || 0) <= 5 ? 'text-orange-600' : 'text-blue-600'
+            }`}>{userStats?.tokens || 0}</div>
             <div className="text-gray-600">Daily Tokens</div>
             <div className="text-xs text-gray-500 mt-1">of {userStats?.dailyTokens || 0} limit</div>
+            {(userStats?.tokens || 0) <= 5 && (
+              <button
+                onClick={() => router.push('/user/profile/tokens')}
+                className="mt-2 text-xs bg-orange-500 hover:bg-orange-600 text-white px-3 py-1 rounded-full font-medium transition-colors"
+              >
+                Buy More
+              </button>
+            )}
           </div>
           <div className="bg-white rounded-xl shadow-lg p-6 text-center">
             <div className="text-3xl font-bold text-green-600 mb-2">{userStats?.monthlyTokens.remaining || 0}</div>

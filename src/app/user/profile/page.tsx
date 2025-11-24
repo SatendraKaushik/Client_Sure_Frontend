@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from "react"
 import { useRouter } from "next/navigation"
 import { toast } from "sonner"
-import { Camera, User, Target, FileText, BarChart3, Bell, Gift, BookOpen, Settings, LogOut, Edit, Info, Calendar, Award } from "lucide-react"
+import { Camera, User, Target, FileText, BarChart3, Bell, Gift, BookOpen, Settings, LogOut, Edit, Info, Calendar, Award, Trash2, CheckCheck } from "lucide-react"
 import Navbar from "../components/Navbar"
 import Footer from "../components/Footer"
 import Axios from "@/utils/Axios"
@@ -196,6 +196,32 @@ export default function ProfilePage() {
     }
   }
 
+  const deleteNotification = async (notificationId: string) => {
+    try {
+      await Axios.delete(`/notifications/${notificationId}`)
+      setNotifications(prev => prev.filter(n => n._id !== notificationId))
+      setNotificationCount(prev => Math.max(0, prev - 1))
+      toast.success('Notification deleted')
+    } catch (error) {
+      console.error('Error deleting notification:', error)
+      toast.error('Error deleting notification')
+    }
+  }
+
+  const deleteAllNotifications = async () => {
+    if (!confirm('Are you sure you want to delete all notifications?')) return
+    
+    try {
+      await Axios.delete('/notifications/all')
+      setNotifications([])
+      setNotificationCount(0)
+      toast.success('All notifications deleted')
+    } catch (error) {
+      console.error('Error deleting all notifications:', error)
+      toast.error('Error deleting all notifications')
+    }
+  }
+
   const loadReferralData = async () => {
     setReferralLoading(true)
     try {
@@ -271,17 +297,25 @@ export default function ProfilePage() {
                 <button
                   key={item.name}
                   onClick={() => {
-                    if (item.name === 'Accessed Resources') {
+                    if (item.name === 'Account Details') {
+                      router.push('/user/profile/account')
+                    } else if (item.name === 'Token Usage') {
+                      router.push('/user/profile/tokens')
+                    } else if (item.name === 'Subscription Plan') {
+                      router.push('/user/profile/subscription')
+                    } else if (item.name === 'Usage Statistics') {
+                      router.push('/user/profile/statistics')
+                    } else if (item.name === 'Notifications') {
+                      router.push('/user/notifications')
+                    } else if (item.name === 'Referral Code') {
+                      router.push('/user/profile/referrals')
+                    } else if (item.name === 'Accessed Resources') {
                       router.push('/user/resources')
                     } else {
                       setActiveSection(item.name)
                     }
                   }}
-                  className={`w-full text-left py-3 px-4 rounded-lg transition-colors flex items-center ${
-                    activeSection === item.name 
-                      ? 'bg-blue-600 text-white' 
-                      : 'text-gray-700 hover:bg-blue-50 hover:text-blue-600'
-                  }`}
+                  className="w-full text-left py-3 px-4 rounded-lg transition-colors flex items-center text-gray-700 hover:bg-blue-50 hover:text-blue-600"
                 >
                   <Icon className="mr-3 w-5 h-5" />
                   <span className="font-medium">{item.name}</span>
@@ -632,13 +666,25 @@ export default function ProfilePage() {
                       <h3 className="text-lg font-semibold text-gray-900">Your Notifications</h3>
                       <p className="text-sm text-gray-600">Stay updated with community activities and system updates</p>
                     </div>
-                    {notificationCount > 0 && (
-                      <button
-                        onClick={markAllAsRead}
-                        className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 font-medium text-sm transition-colors"
-                      >
-                        Mark All Read ({notificationCount})
-                      </button>
+                    {notifications.length > 0 && (
+                      <div className="flex items-center space-x-3">
+                        {notificationCount > 0 && (
+                          <button
+                            onClick={markAllAsRead}
+                            className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 font-medium text-sm transition-colors flex items-center space-x-2"
+                          >
+                            <CheckCheck className="w-4 h-4" />
+                            <span>Mark All Read ({notificationCount})</span>
+                          </button>
+                        )}
+                        <button
+                          onClick={deleteAllNotifications}
+                          className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 font-medium text-sm transition-colors flex items-center space-x-2"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                          <span>Delete All</span>
+                        </button>
+                      </div>
                     )}
                   </div>
 
@@ -660,14 +706,11 @@ export default function ProfilePage() {
                       {notifications.map((notification) => (
                         <div
                           key={notification._id}
-                          className={`border rounded-lg p-4 transition-all hover:shadow-md cursor-pointer ${
+                          className={`border rounded-lg p-4 transition-all hover:shadow-md group ${
                             !notification.isRead 
                               ? 'bg-blue-50 border-blue-200' 
                               : 'bg-white border-gray-200'
                           }`}
-                          onClick={() => {
-                            router.push('/user/community')
-                          }}
                         >
                           <div className="flex items-start space-x-4">
                             <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-bold flex-shrink-0">
@@ -675,7 +718,10 @@ export default function ProfilePage() {
                             </div>
                             <div className="flex-1 min-w-0">
                               <div className="flex items-start justify-between">
-                                <div className="flex-1">
+                                <div 
+                                  className="flex-1 cursor-pointer"
+                                  onClick={() => router.push('/user/community')}
+                                >
                                   <p className="text-sm font-medium text-gray-900 mb-1">
                                     {notification.message}
                                   </p>
@@ -691,9 +737,18 @@ export default function ProfilePage() {
                                     )}
                                   </div>
                                 </div>
-                                {!notification.isRead && (
-                                  <div className="w-2 h-2 bg-blue-500 rounded-full flex-shrink-0 mt-2"></div>
-                                )}
+                                <div className="flex items-center space-x-2">
+                                  {!notification.isRead && (
+                                    <div className="w-2 h-2 bg-blue-500 rounded-full flex-shrink-0"></div>
+                                  )}
+                                  <button
+                                    onClick={() => deleteNotification(notification._id)}
+                                    className="opacity-0 group-hover:opacity-100 p-2 rounded-full hover:bg-red-100 text-red-500 hover:text-red-700 transition-all duration-200"
+                                    title="Delete notification"
+                                  >
+                                    <Trash2 className="w-4 h-4" />
+                                  </button>
+                                </div>
                               </div>
                             </div>
                           </div>

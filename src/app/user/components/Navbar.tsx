@@ -4,7 +4,7 @@ import { useState, useRef, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { toast } from "sonner"
-import { LayoutDashboard, FileText, Users, User, LogOut, ChevronDown, Menu, X, Coins, MessageCircle, Bell } from "lucide-react"
+import { LayoutDashboard, FileText, Users, User, LogOut, ChevronDown, Menu, X, Coins, MessageCircle, Bell, Plus } from "lucide-react"
 import Axios from "@/utils/Axios"
 
 export default function Navbar() {
@@ -77,6 +77,8 @@ export default function Navbar() {
     }
   }
 
+
+
   const getTimeAgo = (dateString) => {
     const now = new Date()
     const date = new Date(dateString)
@@ -133,12 +135,21 @@ export default function Navbar() {
 
           {/* Right Section */}
           <div className="hidden md:flex items-center space-x-3">
-            {/* Token Display */}
-            <div className="flex items-center space-x-2 bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200 px-4 py-2 rounded-lg">
-              <Coins className="w-4 h-4 text-blue-600" />
-              <span className="text-sm font-semibold text-gray-900">{tokens.daily}</span>
-              <span className="text-sm text-gray-500">/</span>
-              <span className="text-sm text-gray-600">{tokens.dailyLimit}</span>
+            {/* Token Display with Buy Now */}
+            <div className="flex items-center space-x-2">
+              <div className="flex items-center space-x-2 bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200 px-4 py-2 rounded-lg">
+                <Coins className="w-4 h-4 text-blue-600" />
+                <span className="text-sm font-semibold text-gray-900">{tokens.daily}</span>
+                <span className="text-sm text-gray-500">/</span>
+                <span className="text-sm text-gray-600">{tokens.dailyLimit}</span>
+              </div>
+              <Link
+                href="/user/profile/tokens"
+                className="flex items-center space-x-1 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white px-3 py-2 rounded-lg text-xs font-medium transition-all shadow-sm"
+              >
+                <Plus className="w-3 h-3" />
+                <span>Buy</span>
+              </Link>
             </div>
 
             {/* Notifications */}
@@ -211,12 +222,12 @@ export default function Navbar() {
                   <div className="px-4 py-2 border-t border-gray-100">
                     <button
                       onClick={() => {
-                        router.push('/user/community')
+                        router.push('/user/notifications')
                         setShowNotifications(false)
                       }}
                       className="text-xs text-blue-600 hover:text-blue-800 font-medium"
                     >
-                      View all in Community
+                      View all notifications
                     </button>
                   </div>
                 </div>
@@ -299,9 +310,18 @@ export default function Navbar() {
             <div className="pt-3 mt-3 border-t border-gray-200 space-y-2">
               <div className="flex items-center justify-between px-3 py-2 bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg border border-blue-200">
                 <span className="text-sm font-medium text-gray-700">Daily Tokens</span>
-                <div className="flex items-center space-x-1">
-                  <Coins className="w-4 h-4 text-blue-600" />
-                  <span className="text-sm font-semibold text-gray-900">{tokens.daily}/{tokens.dailyLimit}</span>
+                <div className="flex items-center space-x-2">
+                  <div className="flex items-center space-x-1">
+                    <Coins className="w-4 h-4 text-blue-600" />
+                    <span className="text-sm font-semibold text-gray-900">{tokens.daily}/{tokens.dailyLimit}</span>
+                  </div>
+                  <Link
+                    href="/user/profile/tokens"
+                    className="flex items-center space-x-1 bg-purple-600 hover:bg-purple-700 text-white px-2 py-1 rounded text-xs font-medium transition-colors"
+                  >
+                    <Plus className="w-3 h-3" />
+                    <span>Buy</span>
+                  </Link>
                 </div>
               </div>
               
