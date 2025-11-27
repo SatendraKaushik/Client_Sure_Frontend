@@ -35,12 +35,12 @@ export default function LeadDetailPage() {
 
   const handleExportLead = async () => {
     if (!lead) return
-    
+
     try {
       const response = await Axios.post('/auth/leads/export', { leadId: lead.id }, {
         responseType: 'blob'
       })
-      
+
       const url = window.URL.createObjectURL(new Blob([response.data]))
       const link = document.createElement('a')
       link.href = url
@@ -49,7 +49,7 @@ export default function LeadDetailPage() {
       link.click()
       link.remove()
       window.URL.revokeObjectURL(url)
-      
+
       toast.success('Lead data exported successfully!')
     } catch (error: any) {
       toast.error(error.response?.data?.error || 'Failed to export lead data')
@@ -92,7 +92,7 @@ export default function LeadDetailPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       <Navbar />
-      
+
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <button
           onClick={() => router.back()}
