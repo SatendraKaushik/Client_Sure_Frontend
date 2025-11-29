@@ -45,7 +45,7 @@ function ResetPasswordForm() {
     }
     
     try {
-      await Axios.post(`/auth/reset-password/${token}`, {
+      await Axios.post(`/auth/reset/${token}`, {
         password: formData.password
       })
       
