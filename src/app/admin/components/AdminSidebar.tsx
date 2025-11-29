@@ -12,7 +12,9 @@ import {
   User, 
   LogOut, 
   Search,
-  MessageCircle 
+  MessageCircle,
+  Award,
+  UserPlus 
 } from "lucide-react"
 
 export default function AdminSidebar() {
@@ -24,7 +26,9 @@ export default function AdminSidebar() {
     { name: 'Users', icon: Users, path: '/admin/users' },
     { name: 'Leads', icon: BarChart3, path: '/admin/leads' },
     { name: 'Resources', icon: FolderOpen, path: '/admin/resources' },
-    { name: 'Community', icon: MessageCircle, path: '/admin/community' }
+    { name: 'User Community', icon: MessageCircle, path: '/admin/community' },
+    { name: 'Leaderboard', icon: Award, path: '/admin/leaderboard' },
+    { name: 'Referrals Management', icon: UserPlus, path: '/admin/referrals' }
   ]
 
   const handleLogout = () => {

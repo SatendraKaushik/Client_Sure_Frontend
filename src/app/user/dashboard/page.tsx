@@ -64,10 +64,14 @@ function DashboardContent() {
     try {
       const response = await Axios.get('/auth/profile')
       const newStats = {
-        tokens: response.data.tokens.daily,
+        tokens: response.data.tokens.effectiveTokens || response.data.tokens.daily,
+        dailyTokens: response.data.tokens.daily,
+        prizeTokens: response.data.tokens.prizeTokens || 0,
+        prizeTokenType: response.data.tokens.prizeTokenType,
+        prizeTokenExpiresAt: response.data.tokens.prizeTokenExpiresAt,
         tokensUsedTotal: response.data.tokens.totalUsed,
         tokensUsedToday: response.data.tokens.dailyUsed,
-        dailyTokens: response.data.tokens.dailyLimit,
+        dailyLimit: response.data.tokens.dailyLimit,
         monthlyTokens: {
           total: response.data.tokens.monthlyTotal,
           used: response.data.tokens.monthlyUsed,
@@ -227,8 +231,23 @@ function DashboardContent() {
               (userStats?.tokens || 0) <= 0 ? 'text-red-600' : 
               (userStats?.tokens || 0) <= 5 ? 'text-orange-600' : 'text-blue-600'
             }`}>{userStats?.tokens || 0}</div>
-            <div className="text-gray-600">Daily Tokens</div>
-            <div className="text-xs text-gray-500 mt-1">of {userStats?.dailyTokens || 0} limit</div>
+            <div className="text-gray-600">Total Available</div>
+            <div className="text-xs text-gray-500 mt-1">
+              {userStats?.dailyTokens || 0} daily
+              {(userStats?.prizeTokens || 0) > 0 && (
+                <span className="text-yellow-600 font-semibold"> + {userStats.prizeTokens} prize</span>
+              )}
+            </div>
+            {(userStats?.prizeTokens || 0) > 0 && (
+              <div className="mt-2 bg-gradient-to-r from-yellow-100 to-orange-100 rounded-lg p-2">
+                <div className="text-xs font-bold text-yellow-700">
+                  🎉 {userStats.prizeTokenType} Bonus!
+                </div>
+                <div className="text-xs text-yellow-600">
+                  Expires: {userStats.prizeTokenExpiresAt ? new Date(userStats.prizeTokenExpiresAt).toLocaleDateString() : 'Soon'}
+                </div>
+              </div>
+            )}
             {(userStats?.tokens || 0) <= 5 && (
               <button
                 onClick={() => router.push('/user/profile/tokens')}

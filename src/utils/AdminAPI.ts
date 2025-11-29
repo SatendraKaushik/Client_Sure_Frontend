@@ -13,12 +13,27 @@ const getAuthHeaders = () => {
 }
 
 const handleResponse = async (response: Response) => {
-  if (!response.ok) {
-    const errorText = await response.text()
-    console.error(`HTTP ${response.status}:`, errorText)
-    throw new Error(`HTTP error! status: ${response.status}`)
-  }
   const text = await response.text()
+  
+  if (!response.ok) {
+    console.error(`HTTP ${response.status}:`, text)
+    
+    // Try to parse error as JSON to get detailed error info
+    try {
+      const errorData = JSON.parse(text)
+      if (errorData.error) {
+        throw new Error(errorData.error)
+      }
+      throw new Error(`HTTP error! status: ${response.status}`)
+    } catch (parseError) {
+      // If JSON parsing fails, check if it's the specific error we're looking for
+      if (text.includes('User already has active prize tokens')) {
+        throw new Error('User already has active prize tokens')
+      }
+      throw new Error(`HTTP error! status: ${response.status}`)
+    }
+  }
+  
   if (!text) return {}
   try {
     return JSON.parse(text)
@@ -132,6 +147,40 @@ export const AdminAPI = {
     } catch (error) {
       console.error('Admin API DELETE error:', error)
       return { error: 'API not available' }
+    }
+  },
+
+  // Prize Token Management
+  awardPrizeTokens: async (userId: string, tokenAmount: number, prizeType: string) => {
+    try {
+      const response = await fetch(`${API_BASE}/award-prize-tokens`, {
+        method: 'POST',
+        headers: getAuthHeaders(),
+        credentials: 'include',
+        body: JSON.stringify({
+          userId,
+          tokenAmount,
+          prizeType
+        })
+      })
+      return await handleResponse(response)
+    } catch (error) {
+      console.error('Award prize tokens error:', error)
+      return { success: false, error: 'API not available' }
+    }
+  },
+
+  getUserTokenStatus: async (userId: string) => {
+    try {
+      const response = await fetch(`${API_BASE}/user/${userId}/token-status`, {
+        method: 'GET',
+        headers: getAuthHeaders(),
+        credentials: 'include'
+      })
+      return await handleResponse(response)
+    } catch (error) {
+      console.error('Get user token status error:', error)
+      return { success: false, error: 'API not available' }
     }
   }
 }

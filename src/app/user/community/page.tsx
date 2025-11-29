@@ -69,20 +69,33 @@ export default function CommunityPage() {
   const [imagePreview, setImagePreview] = useState<string | null>(null)
   const [lastUpdated, setLastUpdated] = useState<Date>(new Date())
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [dailyLimits, setDailyLimits] = useState({
+    posts: 10,
+    likes: 10,
+    comments: 10
+  })
+  const [maxLimits] = useState({
+    posts: 10,
+    likes: 10,
+    comments: 10
+  })
   const router = useRouter()
 
   useEffect(() => {
     fetchData()
     getCurrentUser()
+    fetchDailyLimits()
     
     // Auto-refresh every 60 seconds (silent)
     const refreshInterval = setInterval(() => {
       fetchData(true) // Silent refresh
+      fetchDailyLimits(true) // Silent limits refresh
     }, 60000)
     
     // Refresh when window gets focus (silent)
     const handleWindowFocus = () => {
       fetchData(true) // Silent refresh
+      fetchDailyLimits(true) // Silent limits refresh
     }
     
     window.addEventListener('focus', handleWindowFocus)
@@ -99,6 +112,47 @@ export default function CommunityPage() {
       setCurrentUserId(response.data.user._id)
     } catch (error) {
       console.error('Error fetching user:', error)
+    }
+  }
+
+  const fetchDailyLimits = async (silent = false) => {
+    try {
+      const response = await Axios.get('/community/daily-limits')
+      if (response.data.success) {
+        setDailyLimits(response.data.remainingLimits)
+        
+        // Show exhausted message if all limits are exhausted
+        if (!silent && response.data.allExhausted) {
+          toast.error('Aaj ke liye aapki saari community limits khatam ho gayi hain')
+        }
+      }
+    } catch (error) {
+      if (!silent) {
+        console.error('Error fetching daily limits:', error)
+      }
+    }
+  }
+
+  const updateLimitsFromResponse = (responseData: any) => {
+    if (responseData.remainingLimits) {
+      setDailyLimits(responseData.remainingLimits)
+    }
+    
+    // Show limit exhausted messages
+    if (responseData.limitType && responseData.remainingLimits) {
+      const remaining = responseData.remainingLimits[responseData.limitType]
+      if (remaining === 0) {
+        const messages = {
+          posts: 'Aaj ke liye aapki post limit khatam ho gayi hai',
+          likes: 'Aaj ke liye aapki like limit khatam ho gayi hai', 
+          comments: 'Aaj ke liye aapki comment limit khatam ho gayi hai'
+        }
+        toast.error(messages[responseData.limitType as keyof typeof messages])
+      }
+    }
+    
+    if (responseData.allExhausted) {
+      toast.error('Aaj ke liye aapki saari community limits khatam ho gayi hain')
     }
   }
 
@@ -174,6 +228,7 @@ export default function CommunityPage() {
       
       if (response.data.success) {
         toast.success('Post created successfully! (+5 points) ✨')
+        updateLimitsFromResponse(response.data)
       } else {
         toast.success('Post created successfully! (+5 points)')
       }
@@ -185,8 +240,14 @@ export default function CommunityPage() {
       fetchData(false)
     } catch (error: any) {
       console.error('Create post error:', error)
-      const errorMessage = error.response?.data?.message || 'Error creating post'
-      toast.error(errorMessage)
+      const errorData = error.response?.data
+      
+      if (errorData && (errorData.limitType || errorData.allExhausted)) {
+        updateLimitsFromResponse(errorData)
+      } else {
+        const errorMessage = errorData?.message || 'Error creating post'
+        toast.error(errorMessage)
+      }
     } finally {
       setIsSubmitting(false)
     }
@@ -219,8 +280,11 @@ export default function CommunityPage() {
         )
       )
       
-      await Axios.post(`/community/like/${postId}`)
-      toast.success('Post liked! (+1 point to author)')
+      const response = await Axios.post(`/community/like/${postId}`)
+      if (response.data.success) {
+        toast.success('Post liked! (+1 point to author)')
+        updateLimitsFromResponse(response.data)
+      }
       fetchData(true) // Sync with backend
     } catch (error: any) {
       // Revert optimistic update on error
@@ -235,7 +299,13 @@ export default function CommunityPage() {
             : p
         )
       )
-      toast.error(error.response?.data?.message || 'Error liking post')
+      
+      const errorData = error.response?.data
+      if (errorData && (errorData.limitType || errorData.allExhausted)) {
+        updateLimitsFromResponse(errorData)
+      } else {
+        toast.error(errorData?.message || 'Error liking post')
+      }
     }
   }
 
@@ -282,12 +352,20 @@ export default function CommunityPage() {
     if (!text?.trim()) return
 
     try {
-      await Axios.post(`/community/comment/${postId}`, { text })
-      toast.success('Comment added! (+2 points)')
+      const response = await Axios.post(`/community/comment/${postId}`, { text })
+      if (response.data.success) {
+        toast.success('Comment added! (+2 points)')
+        updateLimitsFromResponse(response.data)
+      }
       setCommentTexts({ ...commentTexts, [postId]: '' })
       fetchData(false)
-    } catch (error) {
-      toast.error('Error adding comment')
+    } catch (error: any) {
+      const errorData = error.response?.data
+      if (errorData && (errorData.limitType || errorData.allExhausted)) {
+        updateLimitsFromResponse(errorData)
+      } else {
+        toast.error(errorData?.message || 'Error adding comment')
+      }
     }
   }
 
@@ -407,6 +485,123 @@ export default function CommunityPage() {
                     >
                       <RefreshCw className="w-5 h-5" />
                     </button>
+                  </div>
+                </div>
+              </div>
+              
+              {/* Daily Limits Display */}
+              <div className="px-6 pb-6">
+                <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg p-4 border border-blue-100">
+                  <div className="flex items-center justify-between mb-3">
+                    <h3 className="text-sm font-semibold text-gray-900 flex items-center gap-2">
+                      <Calendar className="w-4 h-4 text-blue-600" />
+                      Daily Limits
+                    </h3>
+                    <button
+                      onClick={() => fetchDailyLimits(false)}
+                      className="text-xs text-blue-600 hover:text-blue-700 font-medium"
+                    >
+                      Refresh
+                    </button>
+                  </div>
+                  
+                  <div className="grid grid-cols-3 gap-4">
+                    {/* Posts Limit */}
+                    <div className="text-center">
+                      <div className="relative w-12 h-12 mx-auto mb-2">
+                        <svg className="w-12 h-12 transform -rotate-90" viewBox="0 0 36 36">
+                          <path
+                            className="text-gray-200"
+                            stroke="currentColor"
+                            strokeWidth="3"
+                            fill="none"
+                            d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                          />
+                          <path
+                            className={`${dailyLimits.posts > 3 ? 'text-green-500' : dailyLimits.posts > 0 ? 'text-yellow-500' : 'text-red-500'}`}
+                            stroke="currentColor"
+                            strokeWidth="3"
+                            strokeLinecap="round"
+                            fill="none"
+                            strokeDasharray={`${(dailyLimits.posts / maxLimits.posts) * 100}, 100`}
+                            d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                          />
+                        </svg>
+                        <div className="absolute inset-0 flex items-center justify-center">
+                          <span className="text-xs font-bold text-gray-700">{dailyLimits.posts}</span>
+                        </div>
+                      </div>
+                      <div className="text-xs font-medium text-gray-700">Posts</div>
+                      <div className="text-xs text-gray-500">{dailyLimits.posts}/{maxLimits.posts}</div>
+                    </div>
+                    
+                    {/* Likes Limit */}
+                    <div className="text-center">
+                      <div className="relative w-12 h-12 mx-auto mb-2">
+                        <svg className="w-12 h-12 transform -rotate-90" viewBox="0 0 36 36">
+                          <path
+                            className="text-gray-200"
+                            stroke="currentColor"
+                            strokeWidth="3"
+                            fill="none"
+                            d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                          />
+                          <path
+                            className={`${dailyLimits.likes > 3 ? 'text-green-500' : dailyLimits.likes > 0 ? 'text-yellow-500' : 'text-red-500'}`}
+                            stroke="currentColor"
+                            strokeWidth="3"
+                            strokeLinecap="round"
+                            fill="none"
+                            strokeDasharray={`${(dailyLimits.likes / maxLimits.likes) * 100}, 100`}
+                            d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                          />
+                        </svg>
+                        <div className="absolute inset-0 flex items-center justify-center">
+                          <span className="text-xs font-bold text-gray-700">{dailyLimits.likes}</span>
+                        </div>
+                      </div>
+                      <div className="text-xs font-medium text-gray-700">Likes</div>
+                      <div className="text-xs text-gray-500">{dailyLimits.likes}/{maxLimits.likes}</div>
+                    </div>
+                    
+                    {/* Comments Limit */}
+                    <div className="text-center">
+                      <div className="relative w-12 h-12 mx-auto mb-2">
+                        <svg className="w-12 h-12 transform -rotate-90" viewBox="0 0 36 36">
+                          <path
+                            className="text-gray-200"
+                            stroke="currentColor"
+                            strokeWidth="3"
+                            fill="none"
+                            d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                          />
+                          <path
+                            className={`${dailyLimits.comments > 3 ? 'text-green-500' : dailyLimits.comments > 0 ? 'text-yellow-500' : 'text-red-500'}`}
+                            stroke="currentColor"
+                            strokeWidth="3"
+                            strokeLinecap="round"
+                            fill="none"
+                            strokeDasharray={`${(dailyLimits.comments / maxLimits.comments) * 100}, 100`}
+                            d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                          />
+                        </svg>
+                        <div className="absolute inset-0 flex items-center justify-center">
+                          <span className="text-xs font-bold text-gray-700">{dailyLimits.comments}</span>
+                        </div>
+                      </div>
+                      <div className="text-xs font-medium text-gray-700">Comments</div>
+                      <div className="text-xs text-gray-500">{dailyLimits.comments}/{maxLimits.comments}</div>
+                    </div>
+                  </div>
+                  
+                  <div className="mt-3 text-center">
+                    <p className="text-xs text-gray-600">
+                      Limits reset daily at midnight • 
+                      {dailyLimits.posts === 0 && dailyLimits.likes === 0 && dailyLimits.comments === 0 
+                        ? <span className="text-red-600 font-medium">All limits exhausted</span>
+                        : <span className="text-green-600 font-medium">Active</span>
+                      }
+                    </p>
                   </div>
                 </div>
               </div>
@@ -617,15 +812,33 @@ export default function CommunityPage() {
               ) : (
                 <div className="p-6">
                   <button
-                    onClick={() => setShowCreatePost(true)}
-                    className="w-full flex items-center gap-3 p-4 bg-gray-50 hover:bg-gray-100 rounded-lg transition-all border border-gray-200 hover:border-gray-300"
+                    onClick={() => {
+                      if (dailyLimits.posts === 0) {
+                        toast.error('Aaj ke liye aapki post limit khatam ho gayi hai')
+                        return
+                      }
+                      setShowCreatePost(true)
+                    }}
+                    className={`w-full flex items-center gap-3 p-4 rounded-lg transition-all border ${
+                      dailyLimits.posts === 0 
+                        ? 'bg-gray-100 border-gray-200 cursor-not-allowed opacity-60'
+                        : 'bg-gray-50 hover:bg-gray-100 border-gray-200 hover:border-gray-300'
+                    }`}
+                    disabled={dailyLimits.posts === 0}
                   >
                     <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center text-white">
                       <Edit3 className="w-5 h-5" />
                     </div>
                     <div className="text-left">
-                      <div className="font-medium text-gray-900">What's on your mind?</div>
-                      <div className="text-sm text-gray-600">Share your thoughts with the community</div>
+                      <div className="font-medium text-gray-900">
+                        {dailyLimits.posts === 0 ? 'Daily post limit reached' : "What's on your mind?"}
+                      </div>
+                      <div className="text-sm text-gray-600">
+                        {dailyLimits.posts === 0 
+                          ? 'You can post again tomorrow' 
+                          : `Share your thoughts with the community (${dailyLimits.posts} posts left)`
+                        }
+                      </div>
                     </div>
                   </button>
                 </div>
@@ -690,14 +903,22 @@ export default function CommunityPage() {
                             if (isLikedByUser(post)) {
                               unlikePost(post._id)
                             } else {
+                              if (dailyLimits.likes === 0) {
+                                toast.error('Aaj ke liye aapki like limit khatam ho gayi hai')
+                                return
+                              }
                               likePost(post._id)
                             }
                           }}
                           className={`flex items-center gap-2 px-3 py-1.5 rounded-lg transition-all text-sm font-medium ${
                             isLikedByUser(post) 
                               ? 'bg-red-50 text-red-600 hover:bg-red-100' 
-                              : 'text-gray-600 hover:bg-gray-50'
+                              : dailyLimits.likes === 0
+                                ? 'text-gray-400 cursor-not-allowed opacity-60'
+                                : 'text-gray-600 hover:bg-gray-50'
                           }`}
+                          disabled={!isLikedByUser(post) && dailyLimits.likes === 0}
+                          title={!isLikedByUser(post) && dailyLimits.likes === 0 ? 'Daily like limit reached' : ''}
                         >
                           <Heart className={`w-4 h-4 ${isLikedByUser(post) ? 'fill-current' : ''}`} />
                           <span>{post.likes.length}</span>
@@ -750,15 +971,40 @@ export default function CommunityPage() {
                         </div>
                         <input
                           type="text"
-                          placeholder="Write a comment..."
+                          placeholder={dailyLimits.comments === 0 ? 'Comment limit reached' : 'Write a comment...'}
                           value={commentTexts[post._id] || ''}
                           onChange={(e) => setCommentTexts({ ...commentTexts, [post._id]: e.target.value })}
-                          className="flex-1 p-2 border border-gray-300 rounded-lg text-gray-900 bg-white focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-colors text-sm"
-                          onKeyPress={(e) => e.key === 'Enter' && addComment(post._id)}
+                          className={`flex-1 p-2 border rounded-lg text-gray-900 bg-white focus:outline-none focus:ring-2 transition-colors text-sm ${
+                            dailyLimits.comments === 0
+                              ? 'border-gray-200 bg-gray-50 text-gray-400 cursor-not-allowed'
+                              : 'border-gray-300 focus:border-blue-500 focus:ring-blue-500/20'
+                          }`}
+                          onKeyPress={(e) => {
+                            if (e.key === 'Enter') {
+                              if (dailyLimits.comments === 0) {
+                                toast.error('Aaj ke liye aapki comment limit khatam ho gayi hai')
+                                return
+                              }
+                              addComment(post._id)
+                            }
+                          }}
+                          disabled={dailyLimits.comments === 0}
                         />
                         <button
-                          onClick={() => addComment(post._id)}
-                          className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded-lg font-medium transition-colors flex items-center gap-1 text-sm"
+                          onClick={() => {
+                            if (dailyLimits.comments === 0) {
+                              toast.error('Aaj ke liye aapki comment limit khatam ho gayi hai')
+                              return
+                            }
+                            addComment(post._id)
+                          }}
+                          className={`px-3 py-2 rounded-lg font-medium transition-colors flex items-center gap-1 text-sm ${
+                            dailyLimits.comments === 0
+                              ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                              : 'bg-blue-600 hover:bg-blue-700 text-white'
+                          }`}
+                          disabled={dailyLimits.comments === 0}
+                          title={dailyLimits.comments === 0 ? `Daily comment limit reached (${dailyLimits.comments}/10)` : `${dailyLimits.comments} comments left`}
                         >
                           <Send className="w-4 h-4" />
                         </button>

@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { toast } from 'sonner'
 import AdminSidebar from '../components/AdminSidebar'
 import { AdminAPI } from '../../../utils/AdminAPI'
+import { MessageCircle, Trash2, Heart, User, Calendar, Award, Crown } from 'lucide-react'
 
 interface User {
   _id: string
@@ -198,8 +199,11 @@ export default function AdminCommunityPage() {
       <div className="flex-1 overflow-auto">
         <div className="p-8">
           <div className="mb-8">
-            <h1 className="text-3xl font-bold text-gray-900">Community Moderation</h1>
-            <p className="text-gray-600 mt-2">Manage community posts and comments</p>
+            <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
+              <MessageCircle className="w-8 h-8 text-blue-600" />
+              User Community Management
+            </h1>
+            <p className="text-gray-600 mt-2">Moderate posts, comments, and likes • Delete inappropriate content • Manage user activity</p>
           </div>
 
           <div className="bg-white rounded-lg shadow-md">
@@ -247,8 +251,9 @@ export default function AdminCommunityPage() {
                       </div>
                       <button
                         onClick={() => deletePost(post._id)}
-                        className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 text-sm"
+                        className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2"
                       >
+                        <Trash2 className="w-4 h-4" />
                         Delete Post (-5 pts)
                       </button>
                     </div>
@@ -288,8 +293,9 @@ export default function AdminCommunityPage() {
                                 </div>
                                 <button
                                   onClick={() => deleteComment(comment._id)}
-                                  className="bg-red-500 text-white px-3 py-1 rounded text-xs hover:bg-red-600 ml-3"
+                                  className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-xs font-medium transition-colors flex items-center gap-1 ml-3"
                                 >
+                                  <Trash2 className="w-3 h-3" />
                                   Delete (-2 pts)
                                 </button>
                               </div>
@@ -307,10 +313,22 @@ export default function AdminCommunityPage() {
           {/* Leaderboard Section */}
           <div className="bg-white rounded-lg shadow-md mt-6">
             <div className="p-6 border-b border-gray-200">
-              <h2 className="text-xl font-semibold text-gray-900 flex items-center gap-2">
-                🏆 Community Leaderboard
-              </h2>
-              <p className="text-sm text-gray-500 mt-1">Top community members by points</p>
+              <div className="flex items-center justify-between">
+                <div>
+                  <h2 className="text-xl font-semibold text-gray-900 flex items-center gap-2">
+                    <Award className="w-6 h-6 text-yellow-500" />
+                    Community Leaderboard Preview
+                  </h2>
+                  <p className="text-sm text-gray-500 mt-1">Top community members by points • <a href="/admin/leaderboard" className="text-blue-600 hover:text-blue-700 font-medium">View Full Leaderboard →</a></p>
+                </div>
+                <a 
+                  href="/admin/leaderboard"
+                  className="bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded-lg font-medium transition-colors flex items-center gap-2"
+                >
+                  <Crown className="w-4 h-4" />
+                  View Prizes
+                </a>
+              </div>
             </div>
             
             <div className="p-6">
@@ -322,11 +340,13 @@ export default function AdminCommunityPage() {
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   {leaderboard.slice(0, 12).map((user, index) => (
-                    <div key={user._id} className="flex items-center gap-3 p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+                    <div key={user._id} className={`flex items-center gap-3 p-4 rounded-lg transition-colors ${
+                      index < 3 ? 'bg-gradient-to-r from-yellow-50 to-orange-50 border border-yellow-200' : 'bg-gray-50 hover:bg-gray-100'
+                    }`}>
                       <div className={`text-lg font-bold w-10 h-10 rounded-lg flex items-center justify-center ${
-                        index === 0 ? 'bg-yellow-100 text-yellow-600' :
-                        index === 1 ? 'bg-gray-100 text-gray-600' :
-                        index === 2 ? 'bg-orange-100 text-orange-600' :
+                        index === 0 ? 'bg-gradient-to-br from-yellow-400 to-yellow-600 text-white' :
+                        index === 1 ? 'bg-gradient-to-br from-gray-300 to-gray-500 text-white' :
+                        index === 2 ? 'bg-gradient-to-br from-orange-400 to-orange-600 text-white' :
                         'bg-blue-50 text-blue-600'
                       }`}>
                         #{index + 1}
@@ -335,13 +355,20 @@ export default function AdminCommunityPage() {
                         {user.name.charAt(0).toUpperCase()}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <div className="font-semibold text-gray-900 truncate">{user.name}</div>
+                        <div className="font-semibold text-gray-900 truncate flex items-center gap-2">
+                          {user.name}
+                          {index < 3 && (
+                            <span className="text-xs px-2 py-1 rounded-full bg-yellow-100 text-yellow-800 font-bold">
+                              {index === 0 ? '🥇 1st Prize' : index === 1 ? '🥈 2nd Prize' : '🥉 3rd Prize'}
+                            </span>
+                          )}
+                        </div>
                         <div className="text-sm text-gray-500">
-                          {user.points} points • {user.communityActivity.postsCreated} posts
+                          {user.points} points • {user.communityActivity.postsCreated} posts • {user.communityActivity.commentsMade} comments
                         </div>
                       </div>
                       {index < 3 && (
-                        <div className="text-xl">
+                        <div className="text-2xl">
                           {index === 0 ? '🥇' : index === 1 ? '🥈' : '🥉'}
                         </div>
                       )}

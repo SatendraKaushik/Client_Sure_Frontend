@@ -10,7 +10,7 @@ import Axios from "@/utils/Axios"
 export default function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isProfileOpen, setIsProfileOpen] = useState(false)
-  const [tokens, setTokens] = useState({ daily: 0, dailyLimit: 100 })
+  const [tokens, setTokens] = useState({ daily: 0, dailyLimit: 100, prizeTokens: 0, effectiveTokens: 0 })
   const [userName, setUserName] = useState('')
   const [notificationCount, setNotificationCount] = useState(0)
   const [showNotifications, setShowNotifications] = useState(false)
@@ -34,19 +34,26 @@ export default function Navbar() {
         const response = await Axios.get('/auth/profile')
         setTokens({
           daily: response.data.tokens.daily,
-          dailyLimit: response.data.tokens.dailyLimit
+          dailyLimit: response.data.tokens.dailyLimit,
+          prizeTokens: response.data.tokens.prizeTokens || 0,
+          effectiveTokens: response.data.tokens.effectiveTokens || response.data.tokens.daily
         })
         setUserName(response.data.name || '')
       } catch (error) {
         console.error('Error loading tokens:', error)
       }
     }
-    loadTokens()
-    loadNotifications()
     
-    // Auto-refresh notifications every 30 seconds
-    const notificationInterval = setInterval(loadNotifications, 30000)
-    return () => clearInterval(notificationInterval)
+    const loadData = () => {
+      loadTokens()
+      loadNotifications()
+    }
+    
+    loadData()
+    
+    // Auto-refresh tokens and notifications every 15 seconds
+    const refreshInterval = setInterval(loadData, 15000)
+    return () => clearInterval(refreshInterval)
   }, [])
 
   const loadNotifications = async () => {
@@ -137,11 +144,16 @@ export default function Navbar() {
           <div className="hidden md:flex items-center space-x-3">
             {/* Token Display with Buy Now */}
             <div className="flex items-center space-x-2">
-              <div className="flex items-center space-x-2 bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200 px-4 py-2 rounded-lg">
+              <div className="flex items-center space-x-2 bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200 px-4 py-2 rounded-lg relative">
                 <Coins className="w-4 h-4 text-blue-600" />
-                <span className="text-sm font-semibold text-gray-900">{tokens.daily}</span>
+                <span className="text-sm font-semibold text-gray-900">{tokens.effectiveTokens}</span>
                 <span className="text-sm text-gray-500">/</span>
                 <span className="text-sm text-gray-600">{tokens.dailyLimit}</span>
+                {tokens.prizeTokens > 0 && (
+                  <div className="absolute -top-1 -right-1 bg-gradient-to-r from-yellow-400 to-orange-500 text-white text-xs px-1.5 py-0.5 rounded-full font-bold shadow-sm">
+                    +{tokens.prizeTokens}
+                  </div>
+                )}
               </div>
               <Link
                 href="/user/profile/tokens"
@@ -191,27 +203,48 @@ export default function Navbar() {
                         <div
                           key={notification._id}
                           className={`px-4 py-3 hover:bg-gray-50 border-b border-gray-50 cursor-pointer ${
-                            !notification.isRead ? 'bg-blue-50' : ''
+                            !notification.isRead 
+                              ? notification.type === 'prize_tokens_awarded' 
+                                ? 'bg-gradient-to-r from-yellow-50 to-orange-50 border-l-4 border-orange-400' 
+                                : 'bg-blue-50'
+                              : ''
                           }`}
                           onClick={() => {
-                            router.push('/user/community')
+                            if (notification.type !== 'prize_tokens_awarded') {
+                              router.push('/user/community')
+                            }
                             setShowNotifications(false)
                           }}
                         >
                           <div className="flex items-start space-x-3">
-                            <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
-                              {notification.fromUser?.name?.charAt(0).toUpperCase() || 'N'}
+                            <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0 ${
+                              notification.type === 'prize_tokens_awarded' 
+                                ? 'bg-gradient-to-br from-yellow-500 to-orange-600' 
+                                : 'bg-gradient-to-br from-blue-500 to-purple-600'
+                            }`}>
+                              {notification.type === 'prize_tokens_awarded' ? '🎁' : (notification.fromUser?.name?.charAt(0).toUpperCase() || 'N')}
                             </div>
                             <div className="flex-1 min-w-0">
-                              <p className="text-sm text-gray-900 line-clamp-2">
+                              <p className={`text-sm line-clamp-2 ${
+                                notification.type === 'prize_tokens_awarded' 
+                                  ? 'text-orange-900 font-bold' 
+                                  : 'text-gray-900'
+                              }`}>
                                 {notification.message}
                               </p>
                               <p className="text-xs text-gray-500 mt-1">
                                 {getTimeAgo(notification.createdAt)}
                               </p>
+                              {notification.type === 'prize_tokens_awarded' && (
+                                <div className="mt-1 text-xs bg-orange-100 text-orange-700 px-2 py-1 rounded-full inline-block font-medium">
+                                  ✨ Prize Tokens Awarded
+                                </div>
+                              )}
                             </div>
                             {!notification.isRead && (
-                              <div className="w-2 h-2 bg-blue-500 rounded-full flex-shrink-0 mt-2"></div>
+                              <div className={`w-2 h-2 rounded-full flex-shrink-0 mt-2 ${
+                                notification.type === 'prize_tokens_awarded' ? 'bg-orange-500' : 'bg-blue-500'
+                              }`}></div>
                             )}
                           </div>
                         </div>
@@ -308,13 +341,18 @@ export default function Navbar() {
             </Link>
             
             <div className="pt-3 mt-3 border-t border-gray-200 space-y-2">
-              <div className="flex items-center justify-between px-3 py-2 bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg border border-blue-200">
+              <div className="flex items-center justify-between px-3 py-2 bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg border border-blue-200 relative">
                 <span className="text-sm font-medium text-gray-700">Daily Tokens</span>
                 <div className="flex items-center space-x-2">
                   <div className="flex items-center space-x-1">
                     <Coins className="w-4 h-4 text-blue-600" />
-                    <span className="text-sm font-semibold text-gray-900">{tokens.daily}/{tokens.dailyLimit}</span>
+                    <span className="text-sm font-semibold text-gray-900">{tokens.effectiveTokens}/{tokens.dailyLimit}</span>
                   </div>
+                  {tokens.prizeTokens > 0 && (
+                    <div className="bg-gradient-to-r from-yellow-400 to-orange-500 text-white text-xs px-1.5 py-0.5 rounded-full font-bold">
+                      +{tokens.prizeTokens}
+                    </div>
+                  )}
                   <Link
                     href="/user/profile/tokens"
                     className="flex items-center space-x-1 bg-purple-600 hover:bg-purple-700 text-white px-2 py-1 rounded text-xs font-medium transition-colors"
