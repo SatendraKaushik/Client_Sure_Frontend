@@ -9,11 +9,12 @@ interface PricingCardProps {
   duration: string
   price: string
   tokensPerDay: string
+  bonusTokens: number
   features: string[]
   isPopular: boolean
 }
 
-export default function PricingCard({ id, name, duration, price, tokensPerDay, features, isPopular }: PricingCardProps) {
+export default function PricingCard({ id, name, duration, price, tokensPerDay, bonusTokens, features, isPopular }: PricingCardProps) {
   const [isModalOpen, setIsModalOpen] = useState(false)
   return (
     <div
@@ -31,6 +32,11 @@ export default function PricingCard({ id, name, duration, price, tokensPerDay, f
         <div className="bg-green-50 rounded-xl p-6 mb-6">
           <div className="text-4xl font-bold text-gray-900 mb-2">₹{price}</div>
           <p className="text-gray-600 text-sm">{tokensPerDay}</p>
+          {bonusTokens > 0 && (
+            <div className="mt-3 pt-3 border-t border-green-200">
+              <p className="text-green-700 font-semibold text-sm">🎁 +{bonusTokens.toLocaleString()} Bonus Tokens</p>
+            </div>
+          )}
         </div>
 
         {/* Features */}
@@ -63,7 +69,7 @@ export default function PricingCard({ id, name, duration, price, tokensPerDay, f
         <PurchaseModal
           isOpen={isModalOpen}
           onClose={() => setIsModalOpen(false)}
-          plan={{ id, name, price, duration, tokensPerDay }}
+          plan={{ id, name, price, duration, tokensPerDay, bonusTokens }}
         />
       </div>
     </div>

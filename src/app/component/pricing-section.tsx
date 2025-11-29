@@ -9,24 +9,40 @@ const plans = [
     duration: "30 Days",
     price: "299",
     tokensPerDay: "100 tokens/day",
+    bonusTokens: 0,
     features: [
       "100 tokens per day",
       "30 days validity",
       "Access to basic resources",
       "Email support",
-      "Mobile app access",
+    ],
+    isPopular: false,
+  },
+  {
+    id: "standard_plan_001",
+    name: "Standard Plan",
+    duration: "95 Days",
+    price: "799",
+    tokensPerDay: "100 tokens/day",
+    bonusTokens: 500,
+    features: [
+      "100 tokens per day",
+      "95 days validity",
+      "Access to standard resources",
+      "Priority email support",
     ],
     isPopular: false,
   },
   {
     id: "premium_plan_001",
     name: "Premium Plan",
-    duration: "60 Days",
-    price: "499",
+    duration: "190 Days",
+    price: "1699",
     tokensPerDay: "100 tokens/day",
+    bonusTokens: 1000,
     features: [
       "100 tokens per day",
-      "60 days validity",
+      "190 days validity",
       "Access to premium resources",
       "Priority support",
       "Advanced analytics",
@@ -36,16 +52,16 @@ const plans = [
   {
     id: "pro_plan_001",
     name: "Pro Plan",
-    duration: "90 Days",
-    price: "999",
+    duration: "485 Days",
+    price: "3599",
     tokensPerDay: "100 tokens/day",
+    bonusTokens: 12000,
     features: [
       "100 tokens per day",
-      "90 days validity",
+      "485 days validity",
       "Access to all resources",
       "24/7 phone support",
       "Custom integrations",
-      "Advanced security",
     ],
     isPopular: false,
   },
@@ -62,7 +78,7 @@ export default function PricingSection() {
         </div>
 
         {/* Pricing Cards */}
-        <div className="grid md:grid-cols-3 gap-8 mb-12">
+        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8 mb-12">
           {plans.map((plan, index) => (
             <PricingCard key={index} {...plan} />
           ))}
