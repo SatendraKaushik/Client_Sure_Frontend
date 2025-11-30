@@ -258,6 +258,7 @@ export default function AccountDetailsPage() {
             </div>
           </div>
         )}
+        </div>
       </div>
       
       <Footer />
