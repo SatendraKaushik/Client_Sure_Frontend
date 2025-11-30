@@ -12,6 +12,14 @@ interface ReferralAnalytics {
   activeReferrals: number
   referredUsers: number
   conversionRate: string
+  cycles: {
+    total8Cycles: number
+    total15Cycles: number
+    total25Cycles: number
+    totalCycles: number
+    totalTokensDistributed: number
+    averageCyclesPerUser: string
+  }
 }
 
 interface Referrer {
@@ -154,67 +162,137 @@ export default function ReferralsManagement() {
 
         {/* Analytics Cards */}
         {analytics && (
-          <div className="grid grid-cols-1 md:grid-cols-5 gap-6 mb-8">
-            <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
-              <div className="flex items-center">
-                <div className="p-3 bg-blue-100 rounded-lg">
-                  <Users className="w-6 h-6 text-blue-600" />
+          <>
+            <div className="grid grid-cols-1 md:grid-cols-5 gap-6 mb-6">
+              <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
+                <div className="flex items-center">
+                  <div className="p-3 bg-blue-100 rounded-lg">
+                    <Users className="w-6 h-6 text-blue-600" />
+                  </div>
+                  <div className="ml-4">
+                    <p className="text-sm font-medium text-gray-600">Total Referrers</p>
+                    <p className="text-2xl font-bold text-gray-900">{analytics.totalReferrers}</p>
+                  </div>
                 </div>
-                <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-600">Total Referrers</p>
-                  <p className="text-2xl font-bold text-gray-900">{analytics.totalReferrers}</p>
+              </div>
+
+              <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
+                <div className="flex items-center">
+                  <div className="p-3 bg-green-100 rounded-lg">
+                    <UserPlus className="w-6 h-6 text-green-600" />
+                  </div>
+                  <div className="ml-4">
+                    <p className="text-sm font-medium text-gray-600">Total Referrals</p>
+                    <p className="text-2xl font-bold text-gray-900">{analytics.totalReferrals}</p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
+                <div className="flex items-center">
+                  <div className="p-3 bg-purple-100 rounded-lg">
+                    <TrendingUp className="w-6 h-6 text-purple-600" />
+                  </div>
+                  <div className="ml-4">
+                    <p className="text-sm font-medium text-gray-600">Active Referrals</p>
+                    <p className="text-2xl font-bold text-gray-900">{analytics.activeReferrals}</p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
+                <div className="flex items-center">
+                  <div className="p-3 bg-orange-100 rounded-lg">
+                    <Users className="w-6 h-6 text-orange-600" />
+                  </div>
+                  <div className="ml-4">
+                    <p className="text-sm font-medium text-gray-600">Referred Users</p>
+                    <p className="text-2xl font-bold text-gray-900">{analytics.referredUsers}</p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
+                <div className="flex items-center">
+                  <div className="p-3 bg-indigo-100 rounded-lg">
+                    <TrendingUp className="w-6 h-6 text-indigo-600" />
+                  </div>
+                  <div className="ml-4">
+                    <p className="text-sm font-medium text-gray-600">Conversion Rate</p>
+                    <p className="text-2xl font-bold text-gray-900">{analytics.conversionRate}</p>
+                  </div>
                 </div>
               </div>
             </div>
 
-            <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
-              <div className="flex items-center">
-                <div className="p-3 bg-green-100 rounded-lg">
-                  <UserPlus className="w-6 h-6 text-green-600" />
-                </div>
-                <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-600">Total Referrals</p>
-                  <p className="text-2xl font-bold text-gray-900">{analytics.totalReferrals}</p>
+            {/* Cycle Analytics */}
+            <div className="grid grid-cols-1 md:grid-cols-5 gap-6 mb-8">
+              <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
+                <div className="flex items-center">
+                  <div className="p-3 bg-yellow-100 rounded-lg">
+                    <TrendingUp className="w-6 h-6 text-yellow-600" />
+                  </div>
+                  <div className="ml-4">
+                    <p className="text-sm font-medium text-gray-600">8-Referral Cycles</p>
+                    <p className="text-2xl font-bold text-gray-900">{analytics.cycles.total8Cycles}</p>
+                    <p className="text-xs text-gray-500">300 tokens each</p>
+                  </div>
                 </div>
               </div>
-            </div>
 
-            <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
-              <div className="flex items-center">
-                <div className="p-3 bg-purple-100 rounded-lg">
-                  <TrendingUp className="w-6 h-6 text-purple-600" />
-                </div>
-                <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-600">Active Referrals</p>
-                  <p className="text-2xl font-bold text-gray-900">{analytics.activeReferrals}</p>
+              <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
+                <div className="flex items-center">
+                  <div className="p-3 bg-orange-100 rounded-lg">
+                    <TrendingUp className="w-6 h-6 text-orange-600" />
+                  </div>
+                  <div className="ml-4">
+                    <p className="text-sm font-medium text-gray-600">15-Referral Cycles</p>
+                    <p className="text-2xl font-bold text-gray-900">{analytics.cycles.total15Cycles}</p>
+                    <p className="text-xs text-gray-500">500 tokens each</p>
+                  </div>
                 </div>
               </div>
-            </div>
 
-            <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
-              <div className="flex items-center">
-                <div className="p-3 bg-orange-100 rounded-lg">
-                  <Users className="w-6 h-6 text-orange-600" />
-                </div>
-                <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-600">Referred Users</p>
-                  <p className="text-2xl font-bold text-gray-900">{analytics.referredUsers}</p>
+              <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
+                <div className="flex items-center">
+                  <div className="p-3 bg-red-100 rounded-lg">
+                    <TrendingUp className="w-6 h-6 text-red-600" />
+                  </div>
+                  <div className="ml-4">
+                    <p className="text-sm font-medium text-gray-600">25-Referral Cycles</p>
+                    <p className="text-2xl font-bold text-gray-900">{analytics.cycles.total25Cycles}</p>
+                    <p className="text-xs text-gray-500">1000 tokens each</p>
+                  </div>
                 </div>
               </div>
-            </div>
 
-            <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
-              <div className="flex items-center">
-                <div className="p-3 bg-indigo-100 rounded-lg">
-                  <TrendingUp className="w-6 h-6 text-indigo-600" />
+              <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
+                <div className="flex items-center">
+                  <div className="p-3 bg-purple-100 rounded-lg">
+                    <TrendingUp className="w-6 h-6 text-purple-600" />
+                  </div>
+                  <div className="ml-4">
+                    <p className="text-sm font-medium text-gray-600">Total Cycles</p>
+                    <p className="text-2xl font-bold text-gray-900">{analytics.cycles.totalCycles}</p>
+                    <p className="text-xs text-gray-500">All milestones</p>
+                  </div>
                 </div>
-                <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-600">Conversion Rate</p>
-                  <p className="text-2xl font-bold text-gray-900">{analytics.conversionRate}</p>
+              </div>
+
+              <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
+                <div className="flex items-center">
+                  <div className="p-3 bg-green-100 rounded-lg">
+                    <TrendingUp className="w-6 h-6 text-green-600" />
+                  </div>
+                  <div className="ml-4">
+                    <p className="text-sm font-medium text-gray-600">Tokens Distributed</p>
+                    <p className="text-2xl font-bold text-gray-900">{analytics.cycles.totalTokensDistributed}</p>
+                    <p className="text-xs text-gray-500">Avg: {analytics.cycles.averageCyclesPerUser} cycles/user</p>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
+          </>
         )}
 
         {/* Tabs */}
@@ -245,7 +323,7 @@ export default function ReferralsManagement() {
           </div>
 
           {/* Filters */}
-          <div className="p-6 border-b border-gray-200">
+          <div className="p-6 border-b border-gray-200 text-black">
             <div className="flex flex-col sm:flex-row gap-4">
               <div className="flex-1">
                 <div className="relative">

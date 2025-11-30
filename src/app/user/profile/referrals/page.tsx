@@ -28,15 +28,38 @@ interface ReferralData {
   }>
 }
 
+interface MilestoneData {
+  activeReferrals: number
+  totalCycles: number
+  totalTokensEarned: number
+  milestones: Array<{
+    type: string
+    target: number
+    reward: number
+    current: number
+    progress: number
+    cyclesCompleted: number
+    tokensEarnedFromThis: number
+    lastReset: string | null
+    isEligible: boolean
+    nextCycleNumber: number
+  }>
+}
+
 export default function ReferralsPage() {
   const [referralData, setReferralData] = useState<ReferralData | null>(null)
+  const [milestoneData, setMilestoneData] = useState<MilestoneData | null>(null)
   const [loading, setLoading] = useState(true)
   const router = useRouter()
 
   const loadReferralData = async () => {
     try {
-      const response = await Axios.get('/referrals/my-referrals')
-      setReferralData(response.data)
+      const [referralResponse, milestoneResponse] = await Promise.all([
+        Axios.get('/referrals/my-referrals'),
+        Axios.get('/referrals/milestones')
+      ])
+      setReferralData(referralResponse.data)
+      setMilestoneData(milestoneResponse.data)
     } catch (error) {
       console.error('Error loading referral data:', error)
       toast.error('Failed to load referral data')
@@ -183,6 +206,91 @@ export default function ReferralsPage() {
               >
                 Copy Referral Code
               </button>
+            </div>
+          )}
+
+          {milestoneData && (
+            <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
+              <div className="flex items-center justify-between mb-4">
+                <h4 className="text-lg font-semibold text-gray-900 flex items-center space-x-2">
+                  <Gift className="w-5 h-5 text-purple-600" />
+                  <span>Milestone Rewards (Cycle System)</span>
+                </h4>
+                <div className="text-right text-sm">
+                  <div className="font-medium text-purple-600">Total Cycles: {milestoneData.totalCycles}</div>
+                  <div className="text-gray-600">Total Earned: {milestoneData.totalTokensEarned} tokens</div>
+                </div>
+              </div>
+              
+              <div className="space-y-4">
+                {milestoneData.milestones.map((milestone, index) => (
+                  <div key={milestone.type} className="border border-gray-200 rounded-lg p-4">
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="flex items-center space-x-3">
+                        <div className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold ${
+                          milestone.isEligible
+                            ? 'bg-yellow-500 text-white' 
+                            : 'bg-gray-300 text-gray-600'
+                        }`}>
+                          {milestone.target}
+                        </div>
+                        <div>
+                          <div className="font-medium text-gray-900">
+                            {milestone.target} Referrals → {milestone.reward} Tokens
+                          </div>
+                          <div className="text-sm text-gray-600">
+                            Cycle #{milestone.nextCycleNumber} • Completed: {milestone.cyclesCompleted} times
+                          </div>
+                          <div className="text-xs text-green-600">
+                            Earned from this milestone: {milestone.tokensEarnedFromThis} tokens
+                          </div>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        {milestone.isEligible ? (
+                          <span className="px-3 py-1 bg-yellow-100 text-yellow-700 rounded-full text-xs font-medium">
+                            Ready to Claim!
+                          </span>
+                        ) : (
+                          <div>
+                            <span className="text-sm text-gray-500 block">
+                              {milestone.current}/{milestone.target}
+                            </span>
+                            <span className="text-xs text-gray-400">
+                              {milestone.target - milestone.current} more needed
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                    
+                    <div className="w-full bg-gray-200 rounded-full h-3 mb-2">
+                      <div 
+                        className={`h-3 rounded-full transition-all duration-300 ${
+                          milestone.progress >= 100
+                            ? 'bg-yellow-500'
+                            : 'bg-blue-500'
+                        }`}
+                        style={{ width: `${Math.min(100, milestone.progress)}%` }}
+                      ></div>
+                    </div>
+                    
+                    <div className="flex justify-between text-xs text-gray-500">
+                      <span>Progress: {milestone.progress.toFixed(1)}%</span>
+                      {milestone.lastReset && (
+                        <span>Last reset: {new Date(milestone.lastReset).toLocaleDateString()}</span>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+              
+              <div className="mt-4 p-3 bg-blue-50 rounded-lg">
+                <div className="text-sm text-blue-800">
+                  <strong>How Cycles Work:</strong> When you reach a milestone, you get tokens and your progress resets to 0. 
+                  You can achieve the same milestone multiple times to earn more rewards!
+                </div>
+              </div>
             </div>
           )}
 

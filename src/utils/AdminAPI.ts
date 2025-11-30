@@ -1,5 +1,5 @@
 // Admin API utility functions
-const API_BASE = 'http://localhost:5000/api/admin'
+const API_BASE = process.env.NEXT_PUBLIC_ADMIN_API_URL || 'http://localhost:5000/api/admin'
 
 const getAuthHeaders = () => {
   const token = localStorage.getItem('adminToken')
