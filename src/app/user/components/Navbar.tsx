@@ -7,6 +7,17 @@ import { toast } from "sonner"
 import { LayoutDashboard, FileText, Users, User, LogOut, ChevronDown, Menu, X, Coins, MessageCircle, Bell, Plus } from "lucide-react"
 import Axios from "@/utils/Axios"
 
+interface Notification {
+  _id: string
+  message: string
+  type: string
+  isRead: boolean
+  createdAt: string
+  fromUser?: {
+    name: string
+  }
+}
+
 export default function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isProfileOpen, setIsProfileOpen] = useState(false)
@@ -14,7 +25,7 @@ export default function Navbar() {
   const [userName, setUserName] = useState('')
   const [notificationCount, setNotificationCount] = useState(0)
   const [showNotifications, setShowNotifications] = useState(false)
-  const [notifications, setNotifications] = useState([])
+  const [notifications, setNotifications] = useState<Notification[]>([])
   const profileRef = useRef<HTMLDivElement>(null)
   const router = useRouter()
 
@@ -86,7 +97,7 @@ export default function Navbar() {
 
 
 
-  const getTimeAgo = (dateString) => {
+  const getTimeAgo = (dateString: string) => {
     const now = new Date()
     const date = new Date(dateString)
     const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000)

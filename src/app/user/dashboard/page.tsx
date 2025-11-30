@@ -15,6 +15,10 @@ interface UserStats {
   tokensUsedTotal: number
   tokensUsedToday: number
   dailyTokens: number
+  prizeTokens?: number
+  prizeTokenType?: string
+  prizeTokenExpiresAt?: string
+  dailyLimit?: number
   monthlyTokens: {
     total: number
     used: number
@@ -235,16 +239,16 @@ function DashboardContent() {
             <div className="text-xs text-gray-500 mt-1">
               {userStats?.dailyTokens || 0} daily
               {(userStats?.prizeTokens || 0) > 0 && (
-                <span className="text-yellow-600 font-semibold"> + {userStats.prizeTokens} prize</span>
+                <span className="text-yellow-600 font-semibold"> + {userStats?.prizeTokens} prize</span>
               )}
             </div>
             {(userStats?.prizeTokens || 0) > 0 && (
               <div className="mt-2 bg-gradient-to-r from-yellow-100 to-orange-100 rounded-lg p-2">
                 <div className="text-xs font-bold text-yellow-700">
-                  🎉 {userStats.prizeTokenType} Bonus!
+                  🎉 {userStats?.prizeTokenType} Bonus!
                 </div>
                 <div className="text-xs text-yellow-600">
-                  Expires: {userStats.prizeTokenExpiresAt ? new Date(userStats.prizeTokenExpiresAt).toLocaleDateString() : 'Soon'}
+                  Expires: {userStats?.prizeTokenExpiresAt ? new Date(userStats.prizeTokenExpiresAt).toLocaleDateString() : 'Soon'}
                 </div>
               </div>
             )}

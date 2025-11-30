@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation"
 import { ArrowLeft, FileText, Calendar, Award } from "lucide-react"
 import Navbar from "../../components/Navbar"
 import Footer from "../../components/Footer"
+import ProfileSidebar from "../components/ProfileSidebar"
 import Axios from "@/utils/Axios"
 
 interface SubscriptionData {

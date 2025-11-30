@@ -292,9 +292,7 @@ export default function CommunityPage() {
         prevPosts.map(p => 
           p._id === postId 
             ? { ...p, likes: p.likes.filter(like => 
-                typeof like.user_id === 'string' 
-                  ? like.user_id !== currentUserId 
-                  : like.user_id.toString() !== currentUserId
+                String(like.user_id) !== currentUserId
               ) }
             : p
         )
@@ -322,9 +320,7 @@ export default function CommunityPage() {
         prevPosts.map(p => 
           p._id === postId 
             ? { ...p, likes: p.likes.filter(like => 
-                typeof like.user_id === 'string' 
-                  ? like.user_id !== currentUserId 
-                  : like.user_id.toString() !== currentUserId
+                String(like.user_id) !== currentUserId
               ) }
             : p
         )
@@ -383,10 +379,7 @@ export default function CommunityPage() {
     if (!currentUserId) return false
     
     return post.likes.some(like => {
-      const likeUserId = typeof like.user_id === 'string' 
-        ? like.user_id 
-        : like.user_id.toString()
-      return likeUserId === currentUserId
+      return String(like.user_id) === currentUserId
     })
   }
 

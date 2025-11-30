@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useMemo } from "react"
+import { useState, useEffect, useMemo, Suspense } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { Lock, Unlock, Search, Download, Filter, Calendar, Linkedin, Instagram, Facebook, Globe, MapPin, Eye } from "lucide-react"
 import { toast } from "sonner"
@@ -29,7 +29,7 @@ interface Lead {
   updatedAt?: string
 }
 
-export default function LeadsPage() {
+function LeadsContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const [leads, setLeads] = useState<Lead[]>([])
@@ -287,10 +287,7 @@ export default function LeadsPage() {
   }, [filteredLeads, activeTab])
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <Navbar />
-
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="flex items-center justify-between mb-6">
           <div>
             <h1 className="text-2xl font-semibold text-gray-900">Leads</h1>
@@ -722,8 +719,24 @@ export default function LeadsPage() {
             )}
           </>
         )}
-      </div>
+    </div>
+  )
+}
 
+export default function LeadsPage() {
+  return (
+    <div className="min-h-screen bg-gray-50">
+      <Navbar />
+      <Suspense fallback={
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="text-center py-12">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto mb-2"></div>
+            <p className="text-sm text-gray-500">Loading leads...</p>
+          </div>
+        </div>
+      }>
+        <LeadsContent />
+      </Suspense>
       <Footer />
     </div>
   )

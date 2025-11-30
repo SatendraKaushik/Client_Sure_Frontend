@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { Target, Coins, Plus, Zap, TrendingUp, Clock } from "lucide-react"
+import { toast } from "sonner"
 import Navbar from "../../components/Navbar"
 import Footer from "../../components/Footer"
 import ProfileSidebar from "../components/ProfileSidebar"

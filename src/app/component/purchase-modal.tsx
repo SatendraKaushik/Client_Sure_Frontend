@@ -15,6 +15,7 @@ interface PurchaseModalProps {
     price: string
     duration: string
     tokensPerDay: string
+    bonusTokens: number
   }
 }
 
