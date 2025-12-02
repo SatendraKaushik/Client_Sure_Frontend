@@ -1,5 +1,5 @@
 // Admin API utility functions
-const API_BASE = process.env.NEXT_PUBLIC_ADMIN_API_URL || 'http://localhost:5000/api/admin'
+const API_BASE =  "https://client-sure-backend.vercel.app/api/admin";
 
 const getAuthHeaders = () => {
   const token = localStorage.getItem('adminToken')
@@ -7,10 +7,12 @@ const getAuthHeaders = () => {
     'Content-Type': 'application/json'
   }
   if (token) {
-    headers['Authorization'] = `Bearer ${token}`
+    
+    headers['authorization'] = `Bearer ${token}` 
   }
   return headers
 }
+
 
 const handleResponse = async (response: Response) => {
   const text = await response.text()
