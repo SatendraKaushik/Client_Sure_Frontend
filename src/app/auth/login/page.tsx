@@ -41,9 +41,11 @@ function LoginForm() {
         email: formData.email,
         password: formData.password
       })
-      
-      localStorage.setItem('userToken', response.data.accessToken)
-     
+    
+         // ✅ CORRECT:
+    localStorage.setItem('userToken', response.data.userToken)           // Token
+    localStorage.setItem('user', JSON.stringify(response.data.user))     // User object
+    
       
       // Redirect to dashboard with newSubscription param if payment was successful
       const redirectUrl = paymentSuccess ? '/user/dashboard?newSubscription=true' : '/user/dashboard'

@@ -36,7 +36,7 @@
 import axios from "axios";
 
 // const baseURL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
-const baseURL =  "https:client-sure-backend.vercel.app/api";
+const baseURL =  "https://client-sure-backend.vercel.app/api";
 const Axios = axios.create({
   baseURL: baseURL,
   withCredentials: false,
@@ -55,7 +55,7 @@ Axios.interceptors.request.use(
     if (token) {
       // Remove quotes if token is stored as JSON string
       const cleanToken = token.replace(/^"|"$/g, '');
-      config.headers.Authorization = `Bearer ${cleanToken}`;
+      config.headers.authorization = `Bearer ${cleanToken}`;
     }
     return config;
   },
