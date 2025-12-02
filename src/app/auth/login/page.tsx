@@ -42,6 +42,9 @@ function LoginForm() {
         password: formData.password
       })
       
+      localStorage.setItem('userToken', response.data.accessToken)
+     
+      
       // Redirect to dashboard with newSubscription param if payment was successful
       const redirectUrl = paymentSuccess ? '/user/dashboard?newSubscription=true' : '/user/dashboard'
       toast.success('Login successful! Welcome back.')
