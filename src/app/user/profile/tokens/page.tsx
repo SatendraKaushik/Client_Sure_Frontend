@@ -30,22 +30,35 @@ interface TokenBalance {
   hasExtraTokens: boolean
 }
 
+interface QuickPackage {
+  id: string
+  name: string
+  tokens: number
+  price: number
+}
+
 export default function TokenUsagePage() {
   const [tokens, setTokens] = useState<TokenData | null>(null)
   const [tokenBalance, setTokenBalance] = useState<TokenBalance | null>(null)
+  const [quickPackages, setQuickPackages] = useState<QuickPackage[]>([])
   const [loading, setLoading] = useState(true)
   const [showPurchaseModal, setShowPurchaseModal] = useState(false)
   const router = useRouter()
 
   const loadTokenData = async () => {
     try {
-      const [profileResponse, balanceResponse] = await Promise.all([
+      const [profileResponse, balanceResponse, packagesResponse] = await Promise.all([
         Axios.get('/auth/profile'),
-        Axios.get('/tokens/balance')
+        Axios.get('/tokens/balance'),
+        Axios.get('/tokens/packages')
       ])
       
       setTokens(profileResponse.data.tokens)
       setTokenBalance(balanceResponse.data.balance)
+      
+      // Get first 2 packages for quick top-up
+      const packages = packagesResponse.data.packages.slice(0, 2)
+      setQuickPackages(packages)
     } catch (error) {
       console.error('Error loading token data:', error)
     } finally {
@@ -245,16 +258,18 @@ export default function TokenUsagePage() {
                   Quick Top-Up
                 </h3>
                 <div className="grid grid-cols-2 gap-3 mb-4">
-                  <div className="bg-white p-3 rounded-lg border border-purple-200 text-center">
-                    <div className="text-lg font-bold text-purple-600">50</div>
-                    <div className="text-xs text-purple-700">tokens</div>
-                    <div className="text-sm font-semibold text-gray-900">₹25</div>
-                  </div>
-                  <div className="bg-white p-3 rounded-lg border border-purple-200 text-center">
-                    <div className="text-lg font-bold text-purple-600">100</div>
-                    <div className="text-xs text-purple-700">tokens</div>
-                    <div className="text-sm font-semibold text-gray-900">₹45</div>
-                  </div>
+                  {quickPackages.map((pkg, index) => (
+                    <div key={pkg.id} className="bg-white p-3 rounded-lg border border-purple-200 text-center">
+                      <div className="text-lg font-bold text-purple-600">{pkg.tokens}</div>
+                      <div className="text-xs text-purple-700">tokens</div>
+                      <div className="text-sm font-semibold text-gray-900">₹{pkg.price}</div>
+                    </div>
+                  ))}
+                  {quickPackages.length === 0 && (
+                    <div className="col-span-2 text-center text-gray-500 text-sm py-4">
+                      Loading packages...
+                    </div>
+                  )}
                 </div>
                 <button
                   onClick={() => setShowPurchaseModal(true)}

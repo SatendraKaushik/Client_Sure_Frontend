@@ -7,7 +7,7 @@ const plans = [
     id: "basic_plan_001",
     name: "Basic Plan",
     duration: "30 Days",
-    price: "299",
+    price: "999",
     tokensPerDay: "100 tokens/day",
     bonusTokens: 0,
     features: [
@@ -22,7 +22,7 @@ const plans = [
     id: "standard_plan_001",
     name: "Standard Plan",
     duration: "95 Days",
-    price: "799",
+    price: "2499",
     tokensPerDay: "100 tokens/day",
     bonusTokens: 500,
     features: [
@@ -37,7 +37,7 @@ const plans = [
     id: "premium_plan_001",
     name: "Premium Plan",
     duration: "190 Days",
-    price: "1699",
+    price: "4499",
     tokensPerDay: "100 tokens/day",
     bonusTokens: 1000,
     features: [
@@ -53,7 +53,7 @@ const plans = [
     id: "pro_plan_001",
     name: "Pro Plan",
     duration: "485 Days",
-    price: "3599",
+    price: "7999",
     tokensPerDay: "100 tokens/day",
     bonusTokens: 12000,
     features: [
