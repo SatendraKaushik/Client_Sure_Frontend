@@ -4,7 +4,7 @@ import { useState, useRef, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { toast } from "sonner"
-import { LayoutDashboard, FileText, Users, User, LogOut, ChevronDown, Menu, X, Coins, MessageCircle, Bell, Plus } from "lucide-react"
+import { LayoutDashboard, FileText, Users, User, LogOut, ChevronDown, Menu, X, Coins, MessageCircle, Bell, Plus, Mail } from "lucide-react"
 import Axios from "@/utils/Axios"
 
 interface Notification {
@@ -145,6 +145,7 @@ export default function Navbar() {
               <Users className="w-4 h-4" />
               <span className="font-medium">Leads</span>
             </Link>
+          
             <Link href="/user/community" className="flex items-center space-x-2 px-4 py-2 rounded-lg text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-colors">
               <MessageCircle className="w-4 h-4" />
               <span className="font-medium">Community</span>
@@ -301,11 +302,15 @@ export default function Navbar() {
                   </div>
                   <button
                     onClick={handleProfileClick}
-                    className="w-full text-left px-4 py-2.5 text-gray-700 hover:bg-gray-50 flex items-center space-x-3 transition-colors"
+                    className="w-full text-left px-4 py-2.5 text-gray-500 hover:bg-gray-50 flex items-center space-x-3 transition-colors"
                   >
                     <User className="w-4 h-4 text-gray-500" />
                     <span className="text-sm font-medium">View Profile</span>
                   </button>
+                    <Link href="/user/email-tracking" className="w-full text-left px-4 py-2.5 text-gray-500 hover:bg-gray-50 flex items-center space-x-3 transition-colors">
+              <Mail className="w-4 h-4" />
+              <span className="text-sm font-medium">Email Tracking</span>
+            </Link>
                   <div className="border-t border-gray-100 mt-1 pt-1">
                     <button
                       onClick={handleLogout}
@@ -345,6 +350,10 @@ export default function Navbar() {
             <Link href="/user/leads" className="flex items-center space-x-3 px-3 py-2.5 rounded-lg text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-colors">
               <Users className="w-5 h-5" />
               <span className="font-medium">Leads</span>
+            </Link>
+            <Link href="/user/email-tracking" className="flex items-center space-x-3 px-3 py-2.5 rounded-lg text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-colors">
+              <Mail className="w-5 h-5" />
+              <span className="font-medium">Email Tracking</span>
             </Link>
             <Link href="/user/community" className="flex items-center space-x-3 px-3 py-2.5 rounded-lg text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-colors">
               <MessageCircle className="w-5 h-5" />
