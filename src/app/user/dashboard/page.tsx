@@ -15,6 +15,7 @@ interface UserStats {
   tokensUsedTotal: number
   tokensUsedToday: number
   dailyTokens: number
+  totalAvailable?: number
   prizeTokens?: number
   prizeTokenType?: string
   prizeTokenExpiresAt?: string
@@ -53,40 +54,42 @@ function DashboardContent() {
 
   useEffect(() => {
     // Check for new subscription
-    const newSubscription = searchParams.get('newSubscription')
+    const newSubscription = searchParams?.get('newSubscription')
     if (newSubscription === 'true') {
       setShowWelcome(true)
       toast.success('🎉 Welcome! Your subscription is now active. Enjoy your premium resources!')
       
       // Clear localStorage after successful login
-      localStorage.removeItem('pendingUserEmail')
-      localStorage.removeItem('pendingUserName')
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem('pendingUserEmail')
+        localStorage.removeItem('pendingUserName')
+      }
     }
   }, [searchParams])
 
   const loadUserStats = async () => {
     try {
       const response = await Axios.get('/auth/profile')
-      const newStats = {
-        tokens: response.data.tokens.effectiveTokens || response.data.tokens.daily,
-        dailyTokens: response.data.tokens.dailyLimit || 100, // This is the daily limit
-        totalAvailable: response.data.tokens.daily, // This is total available
-        prizeTokens: response.data.tokens.prizeTokens || 0,
-        prizeTokenType: response.data.tokens.prizeTokenType,
-        prizeTokenExpiresAt: response.data.tokens.prizeTokenExpiresAt,
-        tokensUsedTotal: response.data.tokens.totalUsed,
-        tokensUsedToday: response.data.tokens.dailyUsed,
-        dailyLimit: response.data.tokens.dailyLimit || 100,
+      const newStats: UserStats = {
+        tokens: response.data.tokens?.effectiveTokens || response.data.tokens?.daily || 0,
+        dailyTokens: response.data.tokens?.dailyLimit || 100,
+        totalAvailable: response.data.tokens?.daily || 0,
+        prizeTokens: response.data.tokens?.prizeTokens || 0,
+        prizeTokenType: response.data.tokens?.prizeTokenType,
+        prizeTokenExpiresAt: response.data.tokens?.prizeTokenExpiresAt,
+        tokensUsedTotal: response.data.tokens?.totalUsed || 0,
+        tokensUsedToday: response.data.tokens?.dailyUsed || 0,
+        dailyLimit: response.data.tokens?.dailyLimit || 100,
         monthlyTokens: {
-          total: response.data.tokens.monthlyTotal,
-          used: response.data.tokens.monthlyUsed,
-          remaining: response.data.tokens.monthlyRemaining
+          total: response.data.tokens?.monthlyTotal || 0,
+          used: response.data.tokens?.monthlyUsed || 0,
+          remaining: response.data.tokens?.monthlyRemaining || 0
         },
         subscription: {
-          isActive: response.data.subscription.isActive,
-          planName: response.data.subscription.plan?.name,
-          endDate: response.data.subscription.endDate,
-          monthlyAllocation: response.data.tokens.monthlyTotal
+          isActive: response.data.subscription?.isActive || false,
+          planName: response.data.subscription?.plan?.name,
+          endDate: response.data.subscription?.endDate,
+          monthlyAllocation: response.data.tokens?.monthlyTotal || 0
         }
       }
       
@@ -104,7 +107,7 @@ function DashboardContent() {
   const loadResources = async () => {
     try {
       const response = await Axios.get('/resources')
-      const resourcesData = response.data.resources || []
+      const resourcesData = response.data?.resources || []
       setResources(resourcesData)
     } catch (error) {
       console.error('Error loading resources:', error)
@@ -113,14 +116,12 @@ function DashboardContent() {
     }
   }
 
-
-
   const handleAccessResource = async (resourceId: string) => {
     try {
       const response = await Axios.post(`/auth/access/${resourceId}`)
       await loadUserStats()
       
-      if (response.data.resource.url) {
+      if (response.data?.resource?.url) {
         window.open(response.data.resource.url, '_blank')
       }
       
@@ -135,6 +136,10 @@ function DashboardContent() {
     loadUserStats()
     loadResources()
   }, [])
+
+  const handleNavigation = (path: string) => {
+    router.push(path)
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
@@ -172,7 +177,7 @@ function DashboardContent() {
                 <button
                   onClick={() => {
                     setShowLowTokenAlert(false)
-                    router.push('/user/profile/tokens')
+                    handleNavigation('/user/profile/tokens')
                   }}
                   className="w-full bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 text-white py-3 px-4 rounded-lg font-semibold transition-all flex items-center justify-center gap-2"
                 >
@@ -255,7 +260,7 @@ function DashboardContent() {
             )}
             {(userStats?.dailyTokens || 0) <= 5 && (
               <button
-                onClick={() => router.push('/user/profile/tokens')}
+                onClick={() => handleNavigation('/user/profile/tokens')}
                 className="mt-2 text-xs bg-orange-500 hover:bg-orange-600 text-white px-3 py-1 rounded-full font-medium transition-colors"
               >
                 Buy More
@@ -296,13 +301,13 @@ function DashboardContent() {
               <h2 className="text-xl font-bold text-gray-900">Lead Information</h2>
             </div>
             <p className="text-gray-700 mb-4">Access verified business leads with complete contact details and social profiles.</p>
-            <button onClick={() => router.push('/user/leads')} className="bg-blue-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-blue-700 transition-colors w-full">
+            <button onClick={() => handleNavigation('/user/leads')} className="bg-blue-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-blue-700 transition-colors w-full">
               Browse Leads
             </button>
           </div>
 
           {/* Accessed Leads Section */}
-          <div className="bg-linear-to-br from-green-50 to-green-100 rounded-xl shadow-lg p-6 border border-green-200">
+          <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-xl shadow-lg p-6 border border-green-200">
             <div className="flex items-center gap-3 mb-4">
               <div className="bg-green-600 p-3 rounded-lg">
                 <Users className="w-6 h-6 text-white" />
@@ -310,13 +315,13 @@ function DashboardContent() {
               <h2 className="text-xl font-bold text-gray-900">Accessed Leads</h2>
             </div>
             <p className="text-gray-700 mb-4">View and manage all your unlocked leads with full contact information.</p>
-            <button onClick={() => router.push('/user/leads?tab=accessed')} className="bg-green-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-green-700 transition-colors w-full">
+            <button onClick={() => handleNavigation('/user/leads?tab=accessed')} className="bg-green-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-green-700 transition-colors w-full">
               View Accessed
             </button>
           </div>
 
           {/* External Tools Section */}
-          <div className="bg-linear-to-br from-purple-50 to-purple-100 rounded-xl shadow-lg p-6 border border-purple-200">
+          <div className="bg-gradient-to-br from-purple-50 to-purple-100 rounded-xl shadow-lg p-6 border border-purple-200">
             <div className="flex items-center gap-3 mb-4">
               <div className="bg-purple-600 p-3 rounded-lg">
                 <ExternalLink className="w-6 h-6 text-white" />
@@ -324,7 +329,7 @@ function DashboardContent() {
               <h2 className="text-xl font-bold text-gray-900">External Tools</h2>
             </div>
             <p className="text-gray-700 mb-4">Explore powerful tools and integrations to boost your business growth.</p>
-            <button onClick={() => router.push('/user/tools')} className="bg-purple-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-purple-700 transition-colors w-full">
+            <button onClick={() => handleNavigation('/user/tools')} className="bg-purple-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-purple-700 transition-colors w-full">
               Explore Tools
             </button>
           </div>
@@ -338,7 +343,7 @@ function DashboardContent() {
               <h2 className="text-xl font-bold text-gray-900">Community</h2>
             </div>
             <p className="text-gray-700 mb-4">Connect with other members, share insights, and grow together.</p>
-            <button onClick={() => router.push('/user/community')} className="bg-orange-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-orange-700 transition-colors w-full">
+            <button onClick={() => handleNavigation('/user/community')} className="bg-orange-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-orange-700 transition-colors w-full">
               Join Community
             </button>
           </div>
@@ -352,7 +357,7 @@ function DashboardContent() {
               <h2 className="text-xl font-bold text-gray-900">Chatbot Tools</h2>
             </div>
             <p className="text-gray-700 mb-4">Access AI-powered chatbot tools to automate customer interactions and support.</p>
-            <button onClick={() => router.push('/user/dashboard/chatbot')} className="bg-cyan-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-cyan-700 transition-colors w-full">
+            <button onClick={() => handleNavigation('/user/dashboard/chatbot')} className="bg-cyan-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-cyan-700 transition-colors w-full">
               Launch Chatbot
             </button>
           </div>
@@ -383,14 +388,14 @@ function DashboardContent() {
                     <span className="bg-red-100 text-red-700 px-4 py-2 rounded-full text-sm font-semibold">
                       {resources.filter(r => r.type === 'pdf').length} PDFs
                     </span>
-                    <button onClick={() => window.location.href = '/user/resources?type=pdf'} className="bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-red-700 transition-colors">
+                    <button onClick={() => handleNavigation('/user/resources?type=pdf')} className="bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-red-700 transition-colors">
                       View Accessed
                     </button>
                   </div>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {resources.filter(r => r.type === 'pdf').map((resource) => (
-                    <div key={resource.id} onClick={() => window.location.href = `/user/resource/${resource.id}`} className="group bg-white border border-gray-200 rounded-xl overflow-hidden hover:shadow-xl transition-all duration-300 cursor-pointer">
+                    <div key={resource.id} onClick={() => handleNavigation(`/user/resource/${resource.id}`)} className="group bg-white border border-gray-200 rounded-xl overflow-hidden hover:shadow-xl transition-all duration-300 cursor-pointer">
                       <div className="relative h-48 bg-gradient-to-br from-red-50 to-orange-50 flex items-center justify-center">
                         <div className="text-center">
                           <div className="bg-white rounded-2xl p-5 shadow-md mx-auto w-fit">
@@ -438,14 +443,14 @@ function DashboardContent() {
                     <span className="bg-blue-100 text-blue-700 px-4 py-2 rounded-full text-sm font-semibold">
                       {resources.filter(r => r.type === 'video').length} Videos
                     </span>
-                    <button onClick={() => window.location.href = '/user/resources?type=video'} className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-blue-700 transition-colors">
+                    <button onClick={() => handleNavigation('/user/resources?type=video')} className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-blue-700 transition-colors">
                       View Accessed
                     </button>
                   </div>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {resources.filter(r => r.type === 'video').map((resource) => (
-                    <div key={resource.id} onClick={() => window.location.href = `/user/resource/${resource.id}`} className="group bg-white border border-gray-200 rounded-xl overflow-hidden hover:shadow-xl transition-all duration-300 cursor-pointer">
+                    <div key={resource.id} onClick={() => handleNavigation(`/user/resource/${resource.id}`)} className="group bg-white border border-gray-200 rounded-xl overflow-hidden hover:shadow-xl transition-all duration-300 cursor-pointer">
                       <div className="relative h-48 bg-gradient-to-br from-blue-100 to-purple-100">
                         {resource.url && (
                           <video className="w-full h-full object-cover" preload="metadata" onContextMenu={(e) => e.preventDefault()} style={{ pointerEvents: 'none' }}>
@@ -493,7 +498,6 @@ function DashboardContent() {
             <div className="flex items-center">
               <div className="text-yellow-600 mr-3">
                 <AlertTriangle className="w-6 h-6" />
-
               </div>
               <div>
                 <h3 className="text-lg font-semibold text-yellow-800">Subscription Required</h3>
@@ -513,7 +517,7 @@ function DashboardContent() {
                 <div className="bg-gray-200 rounded-full h-4 mb-2">
                   <div 
                     className="bg-blue-600 h-4 rounded-full" 
-                    style={{width: `${Math.min((userStats.dailyTokens / (userStats.dailyLimit || userStats.dailyTokens)) * 100, 100)}%`}}
+                    style={{width: `${Math.min((userStats.dailyTokens / (userStats.dailyLimit || userStats.dailyTokens || 1)) * 100, 100)}%`}}
                   ></div>
                 </div>
                 <p className="text-sm text-gray-600">
@@ -525,7 +529,7 @@ function DashboardContent() {
                 <div className="bg-gray-200 rounded-full h-4 mb-2">
                   <div 
                     className="bg-green-600 h-4 rounded-full" 
-                    style={{width: `${(userStats.monthlyTokens.remaining / userStats.monthlyTokens.total) * 100}%`}}
+                    style={{width: `${userStats.monthlyTokens.total > 0 ? (userStats.monthlyTokens.remaining / userStats.monthlyTokens.total) * 100 : 0}%`}}
                   ></div>
                 </div>
                 <p className="text-sm text-gray-600">

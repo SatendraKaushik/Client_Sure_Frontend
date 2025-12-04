@@ -573,30 +573,30 @@ function LeadsContent() {
           <>
             <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
               <div className="w-full">
-                <table className="w-full table-fixed">
+                <table className="w-full table-auto">
                   <thead className="bg-gray-50 border-b">
                     <tr>
                       {activeTab === 'accessed' && (
-                        <th className="px-4 py-4 text-left text-sm font-medium text-gray-500 uppercase w-16">SELECT</th>
+                        <th className="px-3 py-3 text-left text-sm font-semibold text-gray-700 uppercase tracking-wide">SELECT</th>
                       )}
                       {activeTab === 'all' && lockedLeads.length > 0 && (
-                        <th className="px-4 py-4 text-left text-sm font-medium text-gray-500 uppercase w-16">SELECT</th>
+                        <th className="px-3 py-3 text-left text-sm font-semibold text-gray-700 uppercase tracking-wide">SELECT</th>
                       )}
-                      <th className="px-4 py-4 text-left text-sm font-medium text-gray-500 uppercase w-24">LEAD ID</th>
-                      <th className="px-4 py-4 text-left text-sm font-medium text-gray-500 uppercase w-40">NAME</th>
-                      <th className="px-4 py-4 text-left text-sm font-medium text-gray-500 uppercase w-32">CATEGORY</th>
-                      <th className="px-4 py-4 text-left text-sm font-medium text-gray-500 uppercase w-28">COUNTRY</th>
-                      <th className="px-4 py-4 text-left text-sm font-medium text-gray-500 uppercase w-28">DATE</th>
+                      <th className="px-3 py-3 text-left text-sm font-semibold text-gray-700 uppercase tracking-wide">LEAD ID</th>
+                      <th className="px-3 py-3 text-left text-sm font-semibold text-gray-700 uppercase tracking-wide">NAME</th>
+                      <th className="px-3 py-3 text-left text-sm font-semibold text-gray-700 uppercase tracking-wide">CATEGORY</th>
+                      <th className="px-3 py-3 text-left text-sm font-semibold text-gray-700 uppercase tracking-wide">COUNTRY</th>
+                      <th className="px-3 py-3 text-left text-sm font-semibold text-gray-700 uppercase tracking-wide">DATE</th>
                       {activeTab === 'accessed' && (
                         <>
-                          <th className="px-4 py-4 text-left text-sm font-medium text-gray-500 uppercase w-28">CITY</th>
-                          <th className="px-4 py-4 text-left text-sm font-medium text-gray-500 uppercase w-48">EMAIL</th>
-                          <th className="px-4 py-4 text-left text-sm font-medium text-gray-500 uppercase w-36">PHONE</th>
-                          <th className="px-4 py-4 text-left text-sm font-medium text-gray-500 uppercase w-32">SOCIAL LINKS</th>
+                          <th className="px-2 py-3 text-left text-sm font-semibold text-gray-700 uppercase tracking-wide">CITY</th>
+                          <th className="px-2 py-3 text-left text-sm font-semibold text-gray-700 uppercase tracking-wide">EMAIL</th>
+                          <th className="px-2 py-3 text-left text-sm font-semibold text-gray-700 uppercase tracking-wide">PHONE</th>
+                          <th className="px-2 py-3 text-left text-sm font-semibold text-gray-700 uppercase tracking-wide">SOCIAL LINKS</th>
                         </>
                       )}
-                      <th className="px-4 py-4 text-left text-sm font-medium text-gray-500 uppercase w-24">STATUS</th>
-                      <th className="px-4 py-4 text-left text-sm font-medium text-gray-500 uppercase w-28">ACTION</th>
+                      <th className="px-3 py-3 text-left text-sm font-semibold text-gray-700 uppercase tracking-wide">STATUS</th>
+                      <th className="px-3 py-3 text-center text-sm font-semibold text-gray-700 uppercase tracking-wide">ACTION</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y">
@@ -629,18 +629,30 @@ function LeadsContent() {
                               )}
                             </td>
                           )}
-                          <td className="px-2 py-2 text-xs text-gray-900 font-medium">{lead.leadId}</td>
-                          <td className="px-2 py-2 text-xs font-medium text-gray-900 truncate max-w-32" title={lead.name}>{lead.name}</td>
-                          <td className="px-2 py-2 text-xs text-gray-600 truncate">{lead.category || '-'}</td>
-                          <td className="px-2 py-2 text-xs text-gray-600 truncate">{lead.country || '-'}</td>
-                          <td className="px-2 py-2 text-xs text-gray-600">{new Date(lead.createdAt).toLocaleDateString('en-IN', {day: '2-digit', month: '2-digit', year: '2-digit'})}</td>
+                          <td className="px-3 py-3 text-sm text-gray-900 font-semibold">{lead.leadId}</td>
+                          <td className="px-3 py-3 text-sm font-semibold text-gray-900" title={lead.name}>
+                            <div className="max-w-[120px] truncate">{lead.name}</div>
+                          </td>
+                          <td className="px-3 py-3 text-sm text-gray-700 font-medium">
+                            <div className="max-w-[100px] truncate">{lead.category || '-'}</div>
+                          </td>
+                          <td className="px-3 py-3 text-sm text-gray-700 font-medium">
+                            <div className="max-w-[80px] truncate">{lead.country || '-'}</div>
+                          </td>
+                          <td className="px-3 py-3 text-sm text-gray-700 font-medium whitespace-nowrap">{new Date(lead.createdAt).toLocaleDateString('en-IN', {day: '2-digit', month: '2-digit', year: '2-digit'})}</td>
 
                           {activeTab === 'accessed' && (
                             <>
-                              <td className="px-4 py-3 text-sm text-gray-600">{lead.city || '-'}</td>
-                              <td className="px-4 py-3 text-sm text-gray-600" title={lead.email}>{lead.email}</td>
-                              <td className="px-4 py-3 text-sm text-gray-600">{lead.phone || '-'}</td>
-                              <td className="px-4 py-3 text-sm text-gray-600 relative">
+                              <td className="px-2 py-3 text-sm text-gray-700 font-medium">
+                                <div className="max-w-[80px] truncate">{lead.city || '-'}</div>
+                              </td>
+                              <td className="px-2 py-3 text-sm text-gray-700 font-medium" title={lead.email}>
+                                <div className="max-w-[150px] truncate">{lead.email}</div>
+                              </td>
+                              <td className="px-2 py-3 text-sm text-gray-700 font-medium">
+                                <div className="max-w-[100px] truncate">{lead.phone || '-'}</div>
+                              </td>
+                              <td className="px-2 py-2 text-xs text-gray-600 relative">
                                 <div className="relative">
                                   <button
                                     onClick={(e) => {
@@ -722,31 +734,34 @@ function LeadsContent() {
                             </>
                           )}
 
-                          <td className="px-4 py-3">
+                          <td className="px-3 py-3">
                             {activeTab === 'accessed' || lead.isAccessedByUser ? (
-                              <span className="bg-green-50 text-green-700 px-2 py-1 rounded text-sm font-medium border border-green-200">
+                              <span className="bg-green-50 text-green-700 px-3 py-1.5 rounded-md text-sm font-semibold border border-green-200 whitespace-nowrap">
                                 Accessed
                               </span>
                             ) : (
-                              <span className="bg-gray-100 text-gray-700 px-2 py-1 rounded text-sm font-medium border border-gray-300">
+                              <span className="bg-gray-100 text-gray-700 px-3 py-1.5 rounded-md text-sm font-semibold border border-gray-300 whitespace-nowrap">
                                 Locked
                               </span>
                             )}
                           </td>
-                          <td className="px-4 py-3">
-                            <div className="flex items-center gap-1">
+                          <td className="px-3 py-3">
+                            <div className="flex items-center justify-center">
                               {activeTab === 'accessed' ? (
-                                <>
-                                  <button onClick={() => handleExportLead(lead.id)} className="text-green-600 hover:text-green-800 text-xs font-medium flex items-center gap-1">
-                                    <Download className="w-3 h-3" />
+                                <div className="flex flex-col gap-1">
+                                  <button onClick={() => handleExportLead(lead.id)} className="text-green-600 hover:text-green-800 text-sm font-semibold flex items-center gap-1.5 px-3 py-1.5 bg-green-50 border border-green-200 rounded-md hover:bg-green-100 transition-colors">
+                                    <Download className="w-4 h-4" />
+                                    <span>Export</span>
                                   </button>
-                                  <button onClick={() => { setSelectedEmailLeads([lead.id]); setEmailType('selected'); setShowEmailModal(true); }} className="text-blue-600 hover:text-blue-800 text-xs font-medium flex items-center gap-1">
-                                    <Mail className="w-3 h-3" />
+                                  <button onClick={() => { setSelectedEmailLeads([lead.id]); setEmailType('selected'); setShowEmailModal(true); }} className="text-blue-600 hover:text-blue-800 text-sm font-semibold flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 border border-blue-200 rounded-md hover:bg-blue-100 transition-colors">
+                                    <Mail className="w-4 h-4" />
+                                    <span>Email</span>
                                   </button>
-                                </>
+                                </div>
                               ) : lead.isAccessedByUser ? (
-                                <button onClick={() => router.push('/user/leads?tab=accessed')} className="text-blue-600 hover:text-blue-800 text-xs font-medium flex items-center gap-1">
-                                  <Eye className="w-3 h-3" />
+                                <button onClick={() => router.push('/user/leads?tab=accessed')} className="text-blue-600 hover:text-blue-800 text-sm font-semibold flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 border border-blue-200 rounded-md hover:bg-blue-100 transition-colors">
+                                  <Eye className="w-4 h-4" />
+                                  <span>View</span>
                                 </button>
                               ) : (
                                 <button onClick={() => handleAccessLead(lead.id)} className="text-gray-900 hover:text-gray-700 text-xs font-medium flex items-center gap-1 px-2 py-1 border border-gray-300 rounded hover:bg-gray-50">
