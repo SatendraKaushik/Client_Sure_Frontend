@@ -350,7 +350,7 @@ function LeadsContent() {
   }, [filteredLeads, activeTab])
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div className="w-full px-2 py-4">
         <div className="flex items-center justify-between mb-6">
           <div>
             <h1 className="text-2xl font-semibold text-gray-900">Leads</h1>
@@ -572,40 +572,53 @@ function LeadsContent() {
         ) : (
           <>
             <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
-              <div className="overflow-x-auto">
-                <table className="w-full">
+              <div className="w-full">
+                <table className="w-full table-fixed">
                   <thead className="bg-gray-50 border-b">
                     <tr>
-                      {activeTab === 'all' && lockedLeads.length > 0 && (
-                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase whitespace-nowrap">Select</th>
+                      {activeTab === 'accessed' && (
+                        <th className="px-4 py-4 text-left text-sm font-medium text-gray-500 uppercase w-16">SELECT</th>
                       )}
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase whitespace-nowrap">Lead ID</th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase whitespace-nowrap">Name</th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase whitespace-nowrap">Category</th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase whitespace-nowrap">Country</th>
+                      {activeTab === 'all' && lockedLeads.length > 0 && (
+                        <th className="px-4 py-4 text-left text-sm font-medium text-gray-500 uppercase w-16">SELECT</th>
+                      )}
+                      <th className="px-4 py-4 text-left text-sm font-medium text-gray-500 uppercase w-24">LEAD ID</th>
+                      <th className="px-4 py-4 text-left text-sm font-medium text-gray-500 uppercase w-40">NAME</th>
+                      <th className="px-4 py-4 text-left text-sm font-medium text-gray-500 uppercase w-32">CATEGORY</th>
+                      <th className="px-4 py-4 text-left text-sm font-medium text-gray-500 uppercase w-28">COUNTRY</th>
+                      <th className="px-4 py-4 text-left text-sm font-medium text-gray-500 uppercase w-28">DATE</th>
                       {activeTab === 'accessed' && (
                         <>
-                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase whitespace-nowrap">Select</th>
-                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase whitespace-nowrap">City</th>
-                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase whitespace-nowrap">Email</th>
-                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase whitespace-nowrap">Phone</th>
-                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase whitespace-nowrap">Social Links</th>
+                          <th className="px-4 py-4 text-left text-sm font-medium text-gray-500 uppercase w-28">CITY</th>
+                          <th className="px-4 py-4 text-left text-sm font-medium text-gray-500 uppercase w-48">EMAIL</th>
+                          <th className="px-4 py-4 text-left text-sm font-medium text-gray-500 uppercase w-36">PHONE</th>
+                          <th className="px-4 py-4 text-left text-sm font-medium text-gray-500 uppercase w-32">SOCIAL LINKS</th>
                         </>
                       )}
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase whitespace-nowrap">Status</th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase whitespace-nowrap">Action</th>
+                      <th className="px-4 py-4 text-left text-sm font-medium text-gray-500 uppercase w-24">STATUS</th>
+                      <th className="px-4 py-4 text-left text-sm font-medium text-gray-500 uppercase w-28">ACTION</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y">
                     {filteredLeads.length === 0 ? (
                       <tr>
-                        <td colSpan={12} className="px-4 py-12 text-center text-sm text-gray-500">No leads found</td>
+                        <td colSpan={activeTab === 'accessed' ? 12 : 8} className="px-2 py-8 text-center text-sm text-gray-500">No leads found</td>
                       </tr>
                     ) : (
                       filteredLeads.map((lead) => (
                         <tr key={lead.id} className="hover:bg-gray-50">
+                          {activeTab === 'accessed' && (
+                            <td className="px-2 py-2">
+                              <input
+                                type="checkbox"
+                                checked={selectedEmailLeads.includes(lead.id)}
+                                onChange={() => handleSelectEmailLead(lead.id)}
+                                className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                              />
+                            </td>
+                          )}
                           {activeTab === 'all' && lockedLeads.length > 0 && (
-                            <td className="px-4 py-3">
+                            <td className="px-2 py-2">
                               {!lead.isAccessedByUser && (
                                 <input
                                   type="checkbox"
@@ -616,68 +629,91 @@ function LeadsContent() {
                               )}
                             </td>
                           )}
-                          <td className="px-4 py-3 text-sm text-gray-900">{lead.leadId}</td>
-                          <td className="px-4 py-3 text-sm font-medium text-gray-900">{lead.name}</td>
-                          <td className="px-4 py-3 text-sm text-gray-600">{lead.category || '-'}</td>
-                          <td className="px-4 py-3 text-sm text-gray-600">{lead.country || '-'}</td>
+                          <td className="px-2 py-2 text-xs text-gray-900 font-medium">{lead.leadId}</td>
+                          <td className="px-2 py-2 text-xs font-medium text-gray-900 truncate max-w-32" title={lead.name}>{lead.name}</td>
+                          <td className="px-2 py-2 text-xs text-gray-600 truncate">{lead.category || '-'}</td>
+                          <td className="px-2 py-2 text-xs text-gray-600 truncate">{lead.country || '-'}</td>
+                          <td className="px-2 py-2 text-xs text-gray-600">{new Date(lead.createdAt).toLocaleDateString('en-IN', {day: '2-digit', month: '2-digit', year: '2-digit'})}</td>
 
                           {activeTab === 'accessed' && (
                             <>
-                              <td className="px-4 py-3">
-                                <input
-                                  type="checkbox"
-                                  checked={selectedEmailLeads.includes(lead.id)}
-                                  onChange={() => handleSelectEmailLead(lead.id)}
-                                  className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-                                />
-                              </td>
                               <td className="px-4 py-3 text-sm text-gray-600">{lead.city || '-'}</td>
-                              <td className="px-4 py-3 text-sm text-gray-600">{lead.email}</td>
+                              <td className="px-4 py-3 text-sm text-gray-600" title={lead.email}>{lead.email}</td>
                               <td className="px-4 py-3 text-sm text-gray-600">{lead.phone || '-'}</td>
                               <td className="px-4 py-3 text-sm text-gray-600 relative">
                                 <div className="relative">
                                   <button
-                                    onClick={() => setExpandedSocialLinks(expandedSocialLinks === lead.id ? null : lead.id)}
-                                    className="text-blue-600 hover:text-blue-800 text-xs font-medium px-2 py-1 border border-blue-300 rounded"
+                                    onClick={(e) => {
+                                      const rect = e.currentTarget.getBoundingClientRect();
+                                      const spaceBelow = window.innerHeight - rect.bottom;
+                                      const spaceAbove = rect.top;
+                                      setExpandedSocialLinks(expandedSocialLinks === lead.id ? null : lead.id);
+                                    }}
+                                    className="text-blue-600 hover:text-blue-800 text-xs font-medium px-1 py-1 border border-blue-300 rounded"
                                   >
                                     View Links
                                   </button>
                                   {expandedSocialLinks === lead.id && (
-                                    <div className="absolute z-10 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg p-3 min-w-[200px] right-0">
-                                      <div className="space-y-2">
-                                        {lead.websiteLink && (
-                                          <a href={lead.websiteLink} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-blue-600 hover:text-blue-800 text-sm">
-                                            <Globe className="w-4 h-4" /> Website
-                                          </a>
-                                        )}
-                                        {lead.linkedin && (
-                                          <a href={lead.linkedin} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-blue-700 hover:text-blue-900 text-sm">
-                                            <Linkedin className="w-4 h-4" /> LinkedIn
-                                          </a>
-                                        )}
-                                        {lead.facebookLink && (
-                                          <a href={lead.facebookLink} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-blue-600 hover:text-blue-800 text-sm">
-                                            <Facebook className="w-4 h-4" /> Facebook
-                                          </a>
-                                        )}
-                                        {lead.instagram && (
-                                          <a href={lead.instagram.startsWith('http') ? lead.instagram : `https://instagram.com/${lead.instagram.replace('@', '')}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-pink-600 hover:text-pink-800 text-sm">
-                                            <Instagram className="w-4 h-4" /> Instagram
-                                          </a>
-                                        )}
-                                        {lead.googleMapLink && (
-                                          <a href={lead.googleMapLink} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-green-600 hover:text-green-800 text-sm">
-                                            <MapPin className="w-4 h-4" /> Google Maps
-                                          </a>
-                                        )}
-                                        {lead.addressStreet && (
-                                          <div className="text-xs text-gray-600 pt-2 border-t">
-                                            <strong>Address:</strong> {lead.addressStreet}
+                                    <div className={`absolute z-[9999] bg-white border-2 border-gray-300 rounded-lg shadow-xl p-2 min-w-[180px] right-0 ${filteredLeads.indexOf(lead) < 3 ? 'top-full mt-1' : 'bottom-full mb-1'}`}>
+                                      <div className="relative">
+                                        <div className="absolute -top-2 right-4 w-4 h-4 bg-white border-l-2 border-t-2 border-gray-300 transform rotate-45"></div>
+                                        <div className="space-y-1.5">
+                                          <div className="flex items-center justify-between border-b border-gray-200 pb-2">
+                                            <h4 className="font-medium text-gray-900 text-xs">Social Links</h4>
+                                            <button 
+                                              onClick={() => setExpandedSocialLinks(null)}
+                                              className="text-gray-400 hover:text-gray-600 p-1"
+                                            >
+                                              <X className="w-4 h-4" />
+                                            </button>
                                           </div>
-                                        )}
-                                        {!lead.websiteLink && !lead.linkedin && !lead.facebookLink && !lead.instagram && !lead.googleMapLink && !lead.addressStreet && (
-                                          <div className="text-xs text-gray-400">No links available</div>
-                                        )}
+                                          {lead.websiteLink && (
+                                            <a href={lead.websiteLink} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-blue-600 hover:text-blue-800 text-xs p-1 rounded hover:bg-blue-50 transition-colors">
+                                              <Globe className="w-3 h-3 flex-shrink-0" /> 
+                                              <span className="font-medium text-xs">Website</span>
+                                            </a>
+                                          )}
+                                          {lead.linkedin && (
+                                            <a href={lead.linkedin} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-blue-700 hover:text-blue-900 text-xs p-1 rounded hover:bg-blue-50 transition-colors">
+                                              <Linkedin className="w-3 h-3 flex-shrink-0" /> 
+                                              <span className="font-medium text-xs">LinkedIn</span>
+                                            </a>
+                                          )}
+                                          {lead.facebookLink && (
+                                            <a href={lead.facebookLink} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-blue-600 hover:text-blue-800 text-xs p-1 rounded hover:bg-blue-50 transition-colors">
+                                              <Facebook className="w-3 h-3 flex-shrink-0" /> 
+                                              <span className="font-medium text-xs">Facebook</span>
+                                            </a>
+                                          )}
+                                          {lead.instagram && (
+                                            <a href={lead.instagram.startsWith('http') ? lead.instagram : `https://instagram.com/${lead.instagram.replace('@', '')}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-pink-600 hover:text-pink-800 text-xs p-1 rounded hover:bg-pink-50 transition-colors">
+                                              <Instagram className="w-3 h-3 flex-shrink-0" /> 
+                                              <span className="font-medium text-xs">Instagram</span>
+                                            </a>
+                                          )}
+                                          {lead.googleMapLink && (
+                                            <a href={lead.googleMapLink} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-green-600 hover:text-green-800 text-xs p-1 rounded hover:bg-green-50 transition-colors">
+                                              <MapPin className="w-3 h-3 flex-shrink-0" /> 
+                                              <span className="font-medium text-xs">Google Maps</span>
+                                            </a>
+                                          )}
+                                          {lead.addressStreet && (
+                                            <div className="text-xs text-gray-700 pt-2 border-t border-gray-200 bg-gray-50 p-2 rounded">
+                                              <div className="flex items-start gap-1.5">
+                                                <MapPin className="w-3 h-3 text-gray-500 mt-0.5 flex-shrink-0" />
+                                                <div>
+                                                  <div className="font-medium text-gray-900 mb-0.5 text-xs">Address:</div>
+                                                  <div className="text-gray-600 text-xs">{lead.addressStreet}</div>
+                                                </div>
+                                              </div>
+                                            </div>
+                                          )}
+                                          {!lead.websiteLink && !lead.linkedin && !lead.facebookLink && !lead.instagram && !lead.googleMapLink && !lead.addressStreet && (
+                                            <div className="text-center py-4">
+                                              <div className="text-gray-400 text-xs py-2">No social links available</div>
+                                            </div>
+                                          )}
+                                        </div>
                                       </div>
                                     </div>
                                   )}
@@ -688,33 +724,34 @@ function LeadsContent() {
 
                           <td className="px-4 py-3">
                             {activeTab === 'accessed' || lead.isAccessedByUser ? (
-                              <span className="bg-green-50 text-green-700 px-2 py-1 rounded text-xs font-medium border border-green-200">
+                              <span className="bg-green-50 text-green-700 px-2 py-1 rounded text-sm font-medium border border-green-200">
                                 Accessed
                               </span>
                             ) : (
-                              <span className="bg-gray-100 text-gray-700 px-2 py-1 rounded text-xs font-medium border border-gray-300">
+                              <span className="bg-gray-100 text-gray-700 px-2 py-1 rounded text-sm font-medium border border-gray-300">
                                 Locked
                               </span>
                             )}
                           </td>
                           <td className="px-4 py-3">
-                            <div className="flex items-center gap-2">
+                            <div className="flex items-center gap-1">
                               {activeTab === 'accessed' ? (
                                 <>
-                                  <button onClick={() => handleExportLead(lead.id)} className="text-green-600 hover:text-green-800 text-sm font-medium flex items-center gap-1">
-                                    <Download className="w-4 h-4" />Export
+                                  <button onClick={() => handleExportLead(lead.id)} className="text-green-600 hover:text-green-800 text-xs font-medium flex items-center gap-1">
+                                    <Download className="w-3 h-3" />
                                   </button>
-                                  <button onClick={() => { setSelectedEmailLeads([lead.id]); setEmailType('selected'); setShowEmailModal(true); }} className="text-blue-600 hover:text-blue-800 text-sm font-medium flex items-center gap-1">
-                                    <Mail className="w-4 h-4" />Email
+                                  <button onClick={() => { setSelectedEmailLeads([lead.id]); setEmailType('selected'); setShowEmailModal(true); }} className="text-blue-600 hover:text-blue-800 text-xs font-medium flex items-center gap-1">
+                                    <Mail className="w-3 h-3" />
                                   </button>
                                 </>
                               ) : lead.isAccessedByUser ? (
-                                <button onClick={() => router.push('/user/leads?tab=accessed')} className="text-blue-600 hover:text-blue-800 text-sm font-medium flex items-center gap-1">
-                                  <Eye className="w-4 h-4" />View
+                                <button onClick={() => router.push('/user/leads?tab=accessed')} className="text-blue-600 hover:text-blue-800 text-xs font-medium flex items-center gap-1">
+                                  <Eye className="w-3 h-3" />
                                 </button>
                               ) : (
-                                <button onClick={() => handleAccessLead(lead.id)} className="text-gray-900 hover:text-gray-700 text-sm font-medium flex items-center gap-1">
-                                  <Unlock className="w-4 h-4" />Unlock
+                                <button onClick={() => handleAccessLead(lead.id)} className="text-gray-900 hover:text-gray-700 text-xs font-medium flex items-center gap-1 px-2 py-1 border border-gray-300 rounded hover:bg-gray-50">
+                                  <Lock className="w-3 h-3" />
+                                  <span>Unlock</span>
                                 </button>
                               )}
                             </div>
@@ -798,8 +835,8 @@ function LeadsContent() {
 
         {/* Email Modal */}
         {showEmailModal && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+          <div className="fixed inset-0 backdrop-blur-sm bg-white/30 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto border-2 border-black">
               <div className="p-6">
                 <div className="flex items-center justify-between mb-4">
                   <h2 className="text-xl font-semibold text-gray-900">Send Bulk Email</h2>

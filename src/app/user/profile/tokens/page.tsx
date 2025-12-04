@@ -74,13 +74,23 @@ export default function TokenUsagePage() {
   useEffect(() => {
     loadTokenData()
     
-    // Check for purchase success in URL params
+    // Check for purchase status in URL params
     const urlParams = new URLSearchParams(window.location.search)
-    const purchaseSuccess = urlParams.get('purchase')
+    const purchaseStatus = urlParams.get('purchase')
+    const tokensAdded = urlParams.get('tokens')
     
-    if (purchaseSuccess === 'success') {
-      toast.success('🎉 Token purchase successful! Your balance has been updated.')
-      // Clean URL
+    if (purchaseStatus === 'success') {
+      toast.success(`🎉 Token purchase successful! ${tokensAdded || ''} tokens added to your account.`)
+    } else if (purchaseStatus === 'cancelled') {
+      toast.info('🚫 Payment cancelled. No charges were made.')
+    } else if (purchaseStatus === 'failed') {
+      toast.error('❌ Payment failed. Please try again or contact support.')
+    } else if (purchaseStatus === 'error') {
+      toast.error('⚠️ Payment processing error. Please try again.')
+    }
+    
+    // Clean URL if any purchase status exists
+    if (purchaseStatus) {
       window.history.replaceState({}, document.title, window.location.pathname)
     }
   }, [])
@@ -98,12 +108,13 @@ export default function TokenUsagePage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <Navbar />
-      
-      <div className="flex max-w-7xl mx-auto">
-        <ProfileSidebar />
+      <div className={`${showPurchaseModal ? 'blur-sm' : ''} transition-all duration-300`}>
+        <Navbar />
         
-        <div className="flex-1 p-8 bg-gray-50">
+        <div className="flex max-w-7xl mx-auto">
+          <ProfileSidebar />
+          
+          <div className="flex-1 p-8 bg-gray-50">
           <h1 className="text-2xl font-bold text-gray-900 mb-8 flex items-center space-x-2">
             <Target className="w-6 h-6 text-blue-600" />
             <span>Token Usage</span>
@@ -362,7 +373,10 @@ export default function TokenUsagePage() {
             </div>
           </div>
           )}
+          </div>
         </div>
+        
+        <Footer />
       </div>
       
       {/* Token Purchase Modal */}
@@ -372,8 +386,6 @@ export default function TokenUsagePage() {
         onPurchaseComplete={handlePurchaseComplete}
         currentBalance={tokens?.daily || 0}
       />
-      
-      <Footer />
     </div>
   )
 }

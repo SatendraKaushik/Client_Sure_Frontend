@@ -19,13 +19,14 @@ function PaymentSuccessContent() {
     
     setUserEmail(email)
     setUserName(name)
+  }, [])
 
+  useEffect(() => {
     // Countdown timer
     const timer = setInterval(() => {
       setCountdown((prev) => {
         if (prev <= 1) {
           clearInterval(timer)
-          redirectToLogin()
           return 0
         }
         return prev - 1
@@ -35,9 +36,15 @@ function PaymentSuccessContent() {
     return () => clearInterval(timer)
   }, [])
 
+  // Auto redirect when countdown reaches 0
+  useEffect(() => {
+    if (countdown === 0) {
+      router.push('/auth/login')
+    }
+  }, [countdown, router])
+
   const redirectToLogin = () => {
-    const email = userEmail || localStorage.getItem('pendingUserEmail') || ''
-    router.push(`/auth/login`)
+    router.push('/auth/login')
   }
 
   return (

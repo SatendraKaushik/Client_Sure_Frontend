@@ -68,15 +68,26 @@ export default function PurchaseModal({ isOpen, onClose, plan }: PurchaseModalPr
         referralCode: formData.referralCode || null
       })
       
-      // Redirect to payment gateway instead of login
+      // Environment detection for payment gateway
+      const isLocalhost = window.location.hostname === 'localhost'
+      
       if (response.data.paymentPayload?.checkoutUrl) {
+        // Production payment gateway available
         window.location.href = response.data.paymentPayload.checkoutUrl
       } else {
-        toast.error('Payment gateway not available')
+        // Always fallback to dummy checkout for development/testing
+        const orderId = response.data.orderId || response.data.clientOrderId || `order_${Date.now()}`
+        const baseUrl = isLocalhost 
+          ? 'http://localhost:5000' 
+          : 'https://client-sure-backend.vercel.app'
+        const dummyCheckoutUrl = `${baseUrl}/dummy-checkout?order=${orderId}`
+        console.log('Redirecting to dummy checkout:', dummyCheckoutUrl)
+        window.location.href = dummyCheckoutUrl
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Order creation failed:', error)
-      toast.error('Failed to create order. Please try again.')
+      const errorMessage = error.response?.data?.message || error.response?.data?.error || 'Failed to create order. Please try again.'
+      toast.error(errorMessage)
     } finally {
       setIsLoading(false)
     }
@@ -227,18 +238,19 @@ export default function PurchaseModal({ isOpen, onClose, plan }: PurchaseModalPr
             <button
               type="submit"
               disabled={isLoading}
-              className="flex-1 py-4 px-6 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg hover:from-blue-700 hover:to-purple-700 font-semibold text-lg disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex-1 py-4 px-6 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-semibold text-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
-              {isLoading ? 'Processing...' : `Pay ₹${plan.price}`}
+              {isLoading ? (
+                <>
+                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                  Processing...
+                </>
+              ) : (
+                'Proceed to Payment'
+              )}
             </button>
           </div>
         </form>
-
-        {/* Security Note */}
-        <div className="flex items-center justify-center gap-2 mt-6 text-base text-gray-600">
-          <span>🔒</span>
-          <span>Your information is secure and encrypted</span>
-        </div>
       </div>
     </div>
   )

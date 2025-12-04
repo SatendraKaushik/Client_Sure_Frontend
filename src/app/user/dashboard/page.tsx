@@ -69,13 +69,14 @@ function DashboardContent() {
       const response = await Axios.get('/auth/profile')
       const newStats = {
         tokens: response.data.tokens.effectiveTokens || response.data.tokens.daily,
-        dailyTokens: response.data.tokens.daily,
+        dailyTokens: response.data.tokens.dailyLimit || 100, // This is the daily limit
+        totalAvailable: response.data.tokens.daily, // This is total available
         prizeTokens: response.data.tokens.prizeTokens || 0,
         prizeTokenType: response.data.tokens.prizeTokenType,
         prizeTokenExpiresAt: response.data.tokens.prizeTokenExpiresAt,
         tokensUsedTotal: response.data.tokens.totalUsed,
         tokensUsedToday: response.data.tokens.dailyUsed,
-        dailyLimit: response.data.tokens.dailyLimit,
+        dailyLimit: response.data.tokens.dailyLimit || 100,
         monthlyTokens: {
           total: response.data.tokens.monthlyTotal,
           used: response.data.tokens.monthlyUsed,
@@ -232,12 +233,12 @@ function DashboardContent() {
               </div>
             )}
             <div className={`text-3xl font-bold mb-2 ${
-              (userStats?.tokens || 0) <= 0 ? 'text-red-600' : 
-              (userStats?.tokens || 0) <= 5 ? 'text-orange-600' : 'text-blue-600'
-            }`}>{userStats?.tokens || 0}</div>
-            <div className="text-gray-600">Total Available</div>
+              (userStats?.dailyTokens || 0) <= 0 ? 'text-red-600' : 
+              (userStats?.dailyTokens || 0) <= 5 ? 'text-orange-600' : 'text-blue-600'
+            }`}>{userStats?.dailyTokens || 0}</div>
+            <div className="text-gray-600">Daily Tokens</div>
             <div className="text-xs text-gray-500 mt-1">
-              {userStats?.dailyTokens || 0} daily
+              {userStats?.totalAvailable || 0} total available
               {(userStats?.prizeTokens || 0) > 0 && (
                 <span className="text-yellow-600 font-semibold"> + {userStats?.prizeTokens} prize</span>
               )}
@@ -252,7 +253,7 @@ function DashboardContent() {
                 </div>
               </div>
             )}
-            {(userStats?.tokens || 0) <= 5 && (
+            {(userStats?.dailyTokens || 0) <= 5 && (
               <button
                 onClick={() => router.push('/user/profile/tokens')}
                 className="mt-2 text-xs bg-orange-500 hover:bg-orange-600 text-white px-3 py-1 rounded-full font-medium transition-colors"
@@ -512,11 +513,11 @@ function DashboardContent() {
                 <div className="bg-gray-200 rounded-full h-4 mb-2">
                   <div 
                     className="bg-blue-600 h-4 rounded-full" 
-                    style={{width: `${(userStats.tokens / userStats.dailyTokens) * 100}%`}}
+                    style={{width: `${Math.min((userStats.dailyTokens / (userStats.dailyLimit || userStats.dailyTokens)) * 100, 100)}%`}}
                   ></div>
                 </div>
                 <p className="text-sm text-gray-600">
-                  {userStats.tokens} of {userStats.dailyTokens} remaining
+                  {userStats.dailyTokens} daily limit ({userStats.totalAvailable} total available)
                 </p>
               </div>
               <div>
