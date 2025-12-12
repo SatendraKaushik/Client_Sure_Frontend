@@ -45,9 +45,12 @@ interface LeaderboardUser {
 
 export default function AdminCommunityPage() {
   const [posts, setPosts] = useState<Post[]>([])
+  const [filteredPosts, setFilteredPosts] = useState<Post[]>([])
   const [leaderboard, setLeaderboard] = useState<LeaderboardUser[]>([])
   const [communityStats, setCommunityStats] = useState<any>({})
   const [loading, setLoading] = useState(true)
+  const [emailFilter, setEmailFilter] = useState('')
+  const [dateFilter, setDateFilter] = useState('')
 
   useEffect(() => {
     fetchPosts()
@@ -84,27 +87,31 @@ export default function AdminCommunityPage() {
       console.log('Community API Response:', postsResponse)
       
       // Handle posts response
+      let loadedPosts = []
       if (postsResponse && postsResponse.success && postsResponse.posts && Array.isArray(postsResponse.posts)) {
-        setPosts(postsResponse.posts)
+        loadedPosts = postsResponse.posts
         console.log(`Loaded ${postsResponse.posts.length} posts successfully`)
         if (postsResponse.posts.length === 0) {
           toast.info('No community posts found')
         }
       } else if (postsResponse && postsResponse.posts && Array.isArray(postsResponse.posts)) {
-        setPosts(postsResponse.posts)
+        loadedPosts = postsResponse.posts
         console.log(`Loaded ${postsResponse.posts.length} posts`)
       } else if (postsResponse && postsResponse.data && postsResponse.data.posts && Array.isArray(postsResponse.data.posts)) {
-        setPosts(postsResponse.data.posts)
+        loadedPosts = postsResponse.data.posts
         console.log(`Loaded ${postsResponse.data.posts.length} posts`)
       } else if (postsResponse && postsResponse.error) {
         console.error('API Error:', postsResponse.error)
         toast.error('Failed to load community posts. Please login as admin first.')
-        setPosts([])
+        loadedPosts = []
       } else {
         console.error('Unexpected response format:', postsResponse)
         toast.error('Please login as admin to access community moderation')
-        setPosts([])
+        loadedPosts = []
       }
+      
+      setPosts(loadedPosts)
+      setFilteredPosts(loadedPosts)
       
       // Handle leaderboard response
       if (leaderboardResponse && leaderboardResponse.success && leaderboardResponse.leaderboard) {
@@ -138,6 +145,40 @@ export default function AdminCommunityPage() {
     } finally {
       setLoading(false)
     }
+  }
+
+  // Filter function
+  const applyFilters = () => {
+    let filtered = [...posts]
+    
+    // Email filter
+    if (emailFilter.trim()) {
+      filtered = filtered.filter(post => 
+        post.user_id.email.toLowerCase().includes(emailFilter.toLowerCase()) ||
+        post.user_id.name.toLowerCase().includes(emailFilter.toLowerCase())
+      )
+    }
+    
+    // Date filter
+    if (dateFilter) {
+      const filterDate = new Date(dateFilter)
+      filtered = filtered.filter(post => {
+        const postDate = new Date(post.createdAt)
+        return postDate.toDateString() === filterDate.toDateString()
+      })
+    }
+    
+    setFilteredPosts(filtered)
+  }
+  
+  // Apply filters when filter values change
+  useEffect(() => {
+    applyFilters()
+  }, [emailFilter, dateFilter, posts])
+  
+  const clearFilters = () => {
+    setEmailFilter('')
+    setDateFilter('')
   }
 
   const deletePost = async (postId: string) => {
@@ -208,11 +249,11 @@ export default function AdminCommunityPage() {
 
           <div className="bg-white rounded-lg shadow-md">
             <div className="p-6 border-b border-gray-200">
-              <div className="flex justify-between items-center">
+              <div className="flex justify-between items-center mb-6">
                 <div>
                   <h2 className="text-xl font-semibold text-gray-900">All Community Posts</h2>
                   <p className="text-sm text-gray-500 mt-1">
-                    Total posts: {posts.length} • Active members: {communityStats.activeMembers || 0} • Auto-refreshes every 30s
+                    Total posts: {posts.length} • Filtered: {filteredPosts.length} • Active members: {communityStats.activeMembers || 0}
                   </p>
                 </div>
                 <button
@@ -225,15 +266,49 @@ export default function AdminCommunityPage() {
                   🔄 Refresh
                 </button>
               </div>
+              
+              {/* Filter Section */}
+              <div className="bg-gray-50 rounded-lg p-4">
+                <h3 className="text-sm font-semibold text-gray-900 mb-3">Filter Posts</h3>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-black mb-2">Search by Email/Name</label>
+                    <input
+                      type="text"
+                      value={emailFilter}
+                      onChange={(e) => setEmailFilter(e.target.value)}
+                      placeholder="Enter email or name..."
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-black bg-white"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-black mb-2">Filter by Date</label>
+                    <input
+                      type="date"
+                      value={dateFilter}
+                      onChange={(e) => setDateFilter(e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-black bg-white"
+                    />
+                  </div>
+                  <div className="flex items-end">
+                    <button
+                      onClick={clearFilters}
+                      className="w-full bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700 transition-colors font-medium"
+                    >
+                      Clear Filters
+                    </button>
+                  </div>
+                </div>
+              </div>
             </div>
 
             <div className="divide-y divide-gray-200">
-              {posts.length === 0 ? (
+              {filteredPosts.length === 0 ? (
                 <div className="p-8 text-center text-gray-500">
-                  No community posts found
+                  {posts.length === 0 ? 'No community posts found' : 'No posts match the current filters'}
                 </div>
               ) : (
-                posts.map((post) => (
+                filteredPosts.map((post) => (
                   <div key={post._id} className="p-6">
                     {/* Post Header */}
                     <div className="flex justify-between items-start mb-4">

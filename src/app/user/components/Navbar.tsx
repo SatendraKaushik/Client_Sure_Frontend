@@ -4,7 +4,7 @@ import { useState, useRef, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { toast } from "sonner"
-import { LayoutDashboard, FileText, Users, User, LogOut, ChevronDown, Menu, X, Coins, MessageCircle, Bell, Plus, Mail } from "lucide-react"
+import { LayoutDashboard, FileText, Users, User, LogOut, ChevronDown, Menu, X, Coins, MessageCircle, Bell, Plus, Mail, Bot } from "lucide-react"
 import Axios from "@/utils/Axios"
 
 interface Notification {
@@ -122,17 +122,17 @@ export default function Navbar() {
   return (
     <nav className="bg-white border-b border-gray-200 sticky top-0 z-50 shadow-sm">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-16">
-          {/* Logo */}
-          <Link href="/user/dashboard" className="flex items-center space-x-2">
-            <div className="w-10 h-10 bg-linear-to-br from-blue-600 to-purple-600 rounded-lg flex items-center justify-center">
+        <div className="flex items-center h-16">
+          {/* Logo - Far Left */}
+          <Link href="/user/dashboard" className="flex items-center space-x-2 mr-8">
+            <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-purple-600 rounded-lg flex items-center justify-center">
               <span className="text-white font-bold text-xl">CS</span>
             </div>
-            <span className="text-xl font-bold text-gray-900 hidden sm:block">Client<span className="text-blue-600">Sure</span></span>
+            <span className="text-xl font-bold text-gray-900">Client<span className="text-blue-600">Sure</span></span>
           </Link>
 
           {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center space-x-1">
+          <div className="hidden md:flex items-center space-x-1 flex-1">
             <Link href="/user/dashboard" className="flex items-center space-x-2 px-4 py-2 rounded-lg text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-colors">
               <LayoutDashboard className="w-4 h-4" />
               <span className="font-medium">Dashboard</span>
@@ -150,10 +150,14 @@ export default function Navbar() {
               <MessageCircle className="w-4 h-4" />
               <span className="font-medium">Community</span>
             </Link>
+            <Link href="/user/dashboard/chatbot" className="flex items-center space-x-2 px-4 py-2 rounded-lg text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-colors">
+              <Bot className="w-4 h-4" />
+              <span className="font-medium">AI Chatbot</span>
+            </Link>
           </div>
 
           {/* Right Section */}
-          <div className="hidden md:flex items-center space-x-3">
+          <div className="hidden md:flex items-center space-x-3 ml-auto">
             {/* Token Display with Buy Now */}
             <div className="flex items-center space-x-2">
               <div className="flex items-center space-x-2 bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200 px-4 py-2 rounded-lg relative">
@@ -328,7 +332,7 @@ export default function Navbar() {
           {/* Mobile Menu Button */}
           <button
             onClick={() => setIsMenuOpen(!isMenuOpen)}
-            className="md:hidden p-2 rounded-lg text-gray-700 hover:bg-gray-100 transition-colors"
+            className="md:hidden p-2 rounded-lg text-gray-700 hover:bg-gray-100 transition-colors ml-auto"
           >
             {isMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
           </button>
@@ -358,6 +362,10 @@ export default function Navbar() {
             <Link href="/user/community" className="flex items-center space-x-3 px-3 py-2.5 rounded-lg text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-colors">
               <MessageCircle className="w-5 h-5" />
               <span className="font-medium">Community</span>
+            </Link>
+            <Link href="/user/dashboard/chatbot" className="flex items-center space-x-3 px-3 py-2.5 rounded-lg text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-colors">
+              <Bot className="w-5 h-5" />
+              <span className="font-medium">AI Chatbot</span>
             </Link>
             
             <div className="pt-3 mt-3 border-t border-gray-200 space-y-2">

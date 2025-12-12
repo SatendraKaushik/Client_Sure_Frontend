@@ -37,6 +37,7 @@ interface LeaderboardUser {
   name: string
   avatar?: string
   points: number
+  rank?: number
   communityActivity: {
     postsCreated: number
     commentsMade: number
@@ -45,12 +46,22 @@ interface LeaderboardUser {
   }
 }
 
+interface LeaderboardData {
+  topUsers: LeaderboardUser[]
+  currentUserRank?: {
+    user: LeaderboardUser
+    rank: number
+    totalUsers: number
+  }
+}
+
 export default function CommunityPage() {
   const [posts, setPosts] = useState<Post[]>([])
   const [leaderboard, setLeaderboard] = useState<LeaderboardUser[]>([])
+  const [leaderboardData, setLeaderboardData] = useState<LeaderboardData>({ topUsers: [] })
   const [loading, setLoading] = useState(true)
   const [newPost, setNewPost] = useState({ title: '', description: '' })
-  const [showCreatePost, setShowCreatePost] = useState(false)
+  const [showCreatePost, setShowCreatePost] = useState(true)
   const [commentTexts, setCommentTexts] = useState<{ [key: string]: string }>({})
   const [currentUserId, setCurrentUserId] = useState<string>('')
   const [searchQuery, setSearchQuery] = useState('')
@@ -177,11 +188,22 @@ export default function CommunityPage() {
       
       const [postsRes, leaderboardRes, statsRes] = await Promise.all([
         Axios.get(`${endpoint}${params}`),
-        Axios.get('/community/leaderboard'),
+        Axios.get('/community/leaderboard?limit=10&includeCurrentUser=true'),
         Axios.get('/community/stats')
       ])
       setPosts(postsRes.data.posts)
-      setLeaderboard(leaderboardRes.data.leaderboard)
+      
+      // Handle new leaderboard structure
+      if (leaderboardRes.data.topUsers) {
+        setLeaderboardData({
+          topUsers: leaderboardRes.data.topUsers,
+          currentUserRank: leaderboardRes.data.currentUserRank
+        })
+      } else {
+        // Fallback for old API structure
+        setLeaderboard(leaderboardRes.data.leaderboard || [])
+      }
+      
       setCommunityStats(statsRes.data)
       setLastUpdated(new Date())
     } catch (error: any) {
@@ -1016,58 +1038,127 @@ export default function CommunityPage() {
                 <Award className="w-5 h-5 text-yellow-500" /> Leaderboard
               </h2>
               <p className="text-gray-600 text-sm mt-1">Top community members</p>
-              <div className="mt-4 grid grid-cols-2 gap-3 text-sm">
-                <div className="bg-gray-50 rounded-lg p-3 text-center">
-                  <div className="font-semibold text-gray-900 flex items-center justify-center gap-1">
-                    <MessageCircle className="w-4 h-4 text-blue-600" /> {communityStats.totalComments || 0}
-                  </div>
-                  <div className="text-xs text-gray-600">Comments</div>
-                </div>
-                <div className="bg-gray-50 rounded-lg p-3 text-center">
-                  <div className="font-semibold text-gray-900 flex items-center justify-center gap-1">
-                    <Heart className="w-4 h-4 text-red-500" /> {communityStats.totalLikes || 0}
-                  </div>
-                  <div className="text-xs text-gray-600">Likes</div>
-                </div>
-              </div>
             </div>
             
-            <div className="p-4 max-h-96 overflow-y-auto">
-              {leaderboard.length === 0 ? (
+            <div className="p-4">
+              {(leaderboardData.topUsers.length === 0 && leaderboard.length === 0) ? (
                 <div className="text-center py-8">
                   <Award className="w-12 h-12 text-gray-400 mx-auto mb-2" />
                   <p className="text-gray-500 text-sm">No rankings yet</p>
                 </div>
               ) : (
-                <div className="space-y-2">
-                  {leaderboard.map((user, index) => (
-                    <div key={user._id} className="flex items-center gap-3 p-3 hover:bg-gray-50 rounded-lg transition-colors">
-                      <div className={`text-xs font-semibold w-6 h-6 rounded-full flex items-center justify-center ${
-                        index === 0 ? 'bg-yellow-100 text-yellow-700' :
-                        index === 1 ? 'bg-gray-100 text-gray-700' :
-                        index === 2 ? 'bg-orange-100 text-orange-700' :
-                        'bg-blue-50 text-blue-700'
-                      }`}>
-                        {index + 1}
-                      </div>
-                      <div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center text-white font-semibold text-sm">
-                        {user.name.charAt(0).toUpperCase()}
-                      </div>
-                      <div className="flex-1">
-                        <div className="font-medium text-gray-900 text-sm">{user.name}</div>
-                        <div className="text-xs text-gray-500 flex items-center gap-1">
-                          <Sparkles className="w-3 h-3" /> {user.points} points
+                <div className="space-y-3">
+                  {/* Top 10 Users */}
+                  <div className="space-y-2">
+                    <div className="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-3 flex items-center gap-2">
+                      <Award className="w-4 h-4 text-yellow-500" />
+                      Top 10 Leaders
+                    </div>
+                    
+                    {(leaderboardData.topUsers.length > 0 ? leaderboardData.topUsers : leaderboard.slice(0, 10)).map((user, index) => {
+                      const isCurrentUser = user._id === currentUserId
+                      return (
+                        <div key={user._id} className={`flex items-center gap-3 p-3 rounded-lg transition-all duration-200 ${
+                          isCurrentUser 
+                            ? 'bg-gradient-to-r from-blue-50 to-purple-50 border-2 border-blue-200 shadow-sm' 
+                            : 'hover:bg-gray-50'
+                        }`}>
+                          <div className={`text-xs font-bold w-7 h-7 rounded-full flex items-center justify-center shadow-sm ${
+                            index === 0 ? 'bg-gradient-to-br from-yellow-400 to-yellow-600 text-white' :
+                            index === 1 ? 'bg-gradient-to-br from-gray-300 to-gray-500 text-white' :
+                            index === 2 ? 'bg-gradient-to-br from-orange-400 to-orange-600 text-white' :
+                            isCurrentUser ? 'bg-gradient-to-br from-blue-500 to-purple-600 text-white' :
+                            'bg-gradient-to-br from-gray-100 to-gray-200 text-gray-700'
+                          }`}>
+                            {index + 1}
+                          </div>
+                          
+                          <div className={`w-10 h-10 rounded-full flex items-center justify-center text-white font-semibold text-sm shadow-sm ${
+                            isCurrentUser 
+                              ? 'bg-gradient-to-br from-blue-500 to-purple-600' 
+                              : 'bg-gradient-to-br from-blue-500 to-blue-600'
+                          }`}>
+                            {user.name.charAt(0).toUpperCase()}
+                          </div>
+                          
+                          <div className="flex-1">
+                            <div className={`font-semibold text-sm ${
+                              isCurrentUser ? 'text-blue-900' : 'text-gray-900'
+                            }`}>
+                              {user.name}
+                              {isCurrentUser && (
+                                <span className="ml-2 text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full font-medium">
+                                  You
+                                </span>
+                              )}
+                            </div>
+                            <div className="text-xs text-gray-600 flex items-center gap-1">
+                              <Sparkles className="w-3 h-3 text-yellow-500" /> 
+                              <span className="font-medium">{user.points}</span> points
+                            </div>
+                          </div>
+                          
+                          {index < 3 && (
+                            <div className="flex items-center">
+                              {index === 0 && <div className="text-lg">🥇</div>}
+                              {index === 1 && <div className="text-lg">🥈</div>}
+                              {index === 2 && <div className="text-lg">🥉</div>}
+                            </div>
+                          )}
+                        </div>
+                      )
+                    })}
+                  </div>
+                  
+                  {/* Current User Rank (if not in top 10) */}
+                  {leaderboardData.currentUserRank && leaderboardData.currentUserRank.rank > 10 && (
+                    <div className="mt-6">
+                      <div className="border-t border-gray-200 pt-4">
+                        <div className="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-3 flex items-center gap-2">
+                          <Users className="w-4 h-4 text-blue-500" />
+                          Your Ranking
+                        </div>
+                        
+                        <div className="flex items-center gap-3 p-4 bg-gradient-to-r from-blue-50 to-purple-50 border-2 border-blue-200 rounded-lg shadow-sm">
+                          <div className="text-xs font-bold w-8 h-8 rounded-full flex items-center justify-center bg-gradient-to-br from-blue-500 to-purple-600 text-white shadow-sm">
+                            #{leaderboardData.currentUserRank.rank}
+                          </div>
+                          
+                          <div className="w-12 h-12 rounded-full flex items-center justify-center text-white font-semibold bg-gradient-to-br from-blue-500 to-purple-600 shadow-sm">
+                            {leaderboardData.currentUserRank.user.name.charAt(0).toUpperCase()}
+                          </div>
+                          
+                          <div className="flex-1">
+                            <div className="font-semibold text-blue-900 flex items-center gap-2">
+                              {leaderboardData.currentUserRank.user.name}
+                              <span className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full font-medium">
+                                You
+                              </span>
+                            </div>
+                            <div className="text-xs text-gray-600 flex items-center gap-1">
+                              <Sparkles className="w-3 h-3 text-yellow-500" /> 
+                              <span className="font-medium">{leaderboardData.currentUserRank.user.points}</span> points
+                            </div>
+                            <div className="text-xs text-gray-500 mt-1">
+                              Rank {leaderboardData.currentUserRank.rank} of {leaderboardData.currentUserRank.totalUsers} members
+                            </div>
+                          </div>
+                          
+                          <div className="text-right">
+                            <div className="text-xs text-gray-600 font-medium">Keep going!</div>
+                            <div className="text-xs text-blue-600">🚀</div>
+                          </div>
                         </div>
                       </div>
-                      {index < 3 && (
-                        <Award className={`w-4 h-4 ${
-                          index === 0 ? 'text-yellow-500' :
-                          index === 1 ? 'text-gray-400' :
-                          'text-orange-500'
-                        }`} />
-                      )}
                     </div>
-                  ))}
+                  )}
+                  
+                  {/* Stats Footer */}
+                  <div className="mt-4 pt-4 border-t border-gray-100">
+                    <div className="text-xs text-gray-500 text-center">
+                      🏆 Rankings update every hour
+                    </div>
+                  </div>
                 </div>
               )}
             </div>

@@ -50,6 +50,8 @@ export default function LeadsPage() {
   const [filterCountry, setFilterCountry] = useState("")
   const [filterCategory, setFilterCategory] = useState("")
   const [showDuplicates, setShowDuplicates] = useState(false)
+  const [selectedLeads, setSelectedLeads] = useState<string[]>([])
+  const [isDeleting, setIsDeleting] = useState(false)
 
   const loadLeads = async () => {
     setLoading(true)
@@ -199,6 +201,47 @@ export default function LeadsPage() {
     }
   }
 
+  const handleSelectLead = (leadId: string) => {
+    setSelectedLeads(prev => 
+      prev.includes(leadId) 
+        ? prev.filter(id => id !== leadId)
+        : [...prev, leadId]
+    )
+  }
+
+  const handleSelectAll = () => {
+    if (selectedLeads.length === filteredLeads.length) {
+      setSelectedLeads([])
+    } else {
+      setSelectedLeads(filteredLeads.map(lead => lead._id))
+    }
+  }
+
+  const handleBulkDelete = async () => {
+    if (selectedLeads.length === 0) {
+      toast.error('Please select leads to delete')
+      return
+    }
+
+    if (!confirm(`Delete ${selectedLeads.length} selected leads? This action cannot be undone.`)) {
+      return
+    }
+
+    setIsDeleting(true)
+    try {
+      await Axios.delete('/admin/leads/bulk-delete', {
+        data: { leadIds: selectedLeads }
+      })
+      toast.success(`${selectedLeads.length} leads deleted successfully`)
+      setSelectedLeads([])
+      loadLeads()
+    } catch (error: any) {
+      toast.error('Bulk delete failed')
+    } finally {
+      setIsDeleting(false)
+    }
+  }
+
   useEffect(() => {
     loadLeads()
   }, [page])
@@ -338,6 +381,40 @@ export default function LeadsPage() {
                       Duplicates ({duplicates.length})
                     </button>
                   </div>
+                  
+                  {/* Bulk Actions */}
+                  {selectedLeads.length > 0 && (
+                    <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg flex items-center justify-between">
+                      <span className="text-sm font-medium text-blue-900">
+                        {selectedLeads.length} lead{selectedLeads.length > 1 ? 's' : ''} selected
+                      </span>
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => setSelectedLeads([])}
+                          className="px-3 py-1.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                        >
+                          Clear Selection
+                        </button>
+                        <button
+                          onClick={handleBulkDelete}
+                          disabled={isDeleting}
+                          className="px-3 py-1.5 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-2"
+                        >
+                          {isDeleting ? (
+                            <>
+                              <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                              Deleting...
+                            </>
+                          ) : (
+                            <>
+                              <Trash2 className="w-4 h-4" />
+                              Delete Selected
+                            </>
+                          )}
+                        </button>
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
@@ -383,6 +460,14 @@ export default function LeadsPage() {
             <table className="w-full min-w-[1600px]">
               <thead className="bg-gray-50 border-b">
                 <tr>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase whitespace-nowrap">
+                    <input
+                      type="checkbox"
+                      checked={filteredLeads.length > 0 && selectedLeads.length === filteredLeads.length}
+                      onChange={handleSelectAll}
+                      className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                    />
+                  </th>
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase whitespace-nowrap">#</th>
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase whitespace-nowrap">ID</th>
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase whitespace-nowrap">Name</th>
@@ -400,12 +485,20 @@ export default function LeadsPage() {
               </thead>
               <tbody className="divide-y">
                 {loading ? (
-                  <tr><td colSpan={13} className="px-4 py-12 text-center"><div className="flex flex-col items-center"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mb-2"></div><p className="text-sm text-gray-500">Loading...</p></div></td></tr>
+                  <tr><td colSpan={14} className="px-4 py-12 text-center"><div className="flex flex-col items-center"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mb-2"></div><p className="text-sm text-gray-500">Loading...</p></div></td></tr>
                 ) : filteredLeads.length === 0 ? (
-                  <tr><td colSpan={13} className="px-4 py-12 text-center text-sm text-gray-500">No leads found</td></tr>
+                  <tr><td colSpan={14} className="px-4 py-12 text-center text-sm text-gray-500">No leads found</td></tr>
                 ) : (
                   filteredLeads.map((lead, index) => (
-                    <tr key={lead._id} className={`hover:bg-gray-50 ${duplicates.includes(lead._id) ? 'bg-red-50' : ''}`}>
+                    <tr key={lead._id} className={`hover:bg-gray-50 ${duplicates.includes(lead._id) ? 'bg-red-50' : ''} ${selectedLeads.includes(lead._id) ? 'bg-blue-50' : ''}`}>
+                      <td className="px-4 py-3 text-sm text-gray-500">
+                        <input
+                          type="checkbox"
+                          checked={selectedLeads.includes(lead._id)}
+                          onChange={() => handleSelectLead(lead._id)}
+                          className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                        />
+                      </td>
                       <td className="px-4 py-3 text-sm text-gray-500">{(page - 1) * limit + index + 1}</td>
                       <td className="px-4 py-3 text-sm text-gray-900">{lead.leadId}</td>
                       <td className="px-4 py-3 text-sm font-medium text-gray-900 flex items-center gap-2">

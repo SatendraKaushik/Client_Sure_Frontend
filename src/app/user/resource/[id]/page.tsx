@@ -109,11 +109,32 @@ export default function ResourceDetailPage() {
                   </div>
                 ) : resource.type === 'pdf' && resource.url ? (
                   <div className="relative">
-                    <iframe 
-                      src={resource.url} 
-                      className="w-full h-[600px]" 
-                      title="PDF Viewer"
-                    />
+                    <div className="w-full h-[600px] bg-gray-50 flex items-center justify-center">
+                      <div className="text-center p-8">
+                        <div className="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                          <FileText className="w-10 h-10 text-red-600" />
+                        </div>
+                        <h3 className="text-lg font-semibold text-gray-900 mb-3">PDF Document Ready</h3>
+                        <p className="text-gray-600 mb-6">Click below to open or download the PDF document.</p>
+                        <div className="space-y-3">
+                          <a 
+                            href={resource.url} 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            className="block bg-red-600 text-white px-6 py-3 rounded-lg hover:bg-red-700 transition-colors font-medium"
+                          >
+                            Open PDF in New Tab
+                          </a>
+                          <a 
+                            href={resource.url} 
+                            download={resource.title}
+                            className="block bg-gray-600 text-white px-6 py-3 rounded-lg hover:bg-gray-700 transition-colors font-medium"
+                          >
+                            Download PDF
+                          </a>
+                        </div>
+                      </div>
+                    </div>
                     <div className="absolute top-4 right-4">
                       <span className="px-3 py-1 rounded-md text-xs font-medium bg-red-50 text-red-700 border border-red-200">
                         PDF

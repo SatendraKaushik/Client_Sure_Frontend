@@ -22,6 +22,8 @@ export default function PDFDocumentsContent() {
   })
   const [editingDoc, setEditingDoc] = useState<PDFDocument | null>(null)
   const [isLoading, setIsLoading] = useState(false)
+  const [previewDoc, setPreviewDoc] = useState<PDFDocument | null>(null)
+  const [pdfError, setPdfError] = useState(false)
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -57,10 +59,12 @@ export default function PDFDocumentsContent() {
   const loadDocuments = async () => {
     try {
       const response = await Axios.get('/admin/resources')
-      const pdfDocs = response.data.filter((doc: any) => doc.type === 'pdf').map((doc: any) => ({
-        ...doc,
-        id: doc._id || doc.id
-      }))
+      const pdfDocs = response.data
+        .filter((doc: any) => doc.type === 'pdf')
+        .map((doc: any) => ({
+          ...doc,
+          id: doc._id || doc.id
+        }))
       setDocuments(pdfDocs)
     } catch (error) {
       console.error('Error loading documents:', error)
@@ -220,17 +224,20 @@ export default function PDFDocumentsContent() {
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 p-6">
-            {documents.map((doc) => (
-              <div key={doc.id} className="border rounded-lg overflow-hidden hover:shadow-lg transition-shadow">
+            {documents.map((doc, index) => (
+              <div key={doc.id || doc._id || index} className="border rounded-lg overflow-hidden hover:shadow-lg transition-shadow">
                 {/* PDF Preview */}
                 <div className="relative h-48 bg-gray-100">
                   {doc.url ? (
-                    <iframe
-                      src={`${doc.url}#toolbar=0&navpanes=0&scrollbar=0`}
-                      className="w-full h-full border-0"
-                      title={doc.title}
-                      onContextMenu={(e) => e.preventDefault()}
-                    />
+                    <div className="relative w-full h-full bg-gray-50 flex items-center justify-center">
+                      <div className="text-center">
+                        <svg className="w-12 h-12 text-red-600 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                        </svg>
+                        <p className="text-sm text-gray-600 mb-2">PDF Document</p>
+                        <p className="text-xs text-gray-500">Click Preview to view</p>
+                      </div>
+                    </div>
                   ) : (
                     <div className="w-full h-full flex items-center justify-center">
                       <svg className="w-16 h-16 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -265,6 +272,12 @@ export default function PDFDocumentsContent() {
                   
                   <div className="flex space-x-2">
                     <button 
+                      onClick={() => setPreviewDoc(doc)}
+                      className="flex-1 text-green-600 hover:text-green-800 text-sm font-medium py-2 px-3 border border-green-200 rounded hover:bg-green-50 transition-colors"
+                    >
+                      Preview
+                    </button>
+                    <button 
                       onClick={() => editDocument(doc)}
                       className="flex-1 text-blue-600 hover:text-blue-800 text-sm font-medium py-2 px-3 border border-blue-200 rounded hover:bg-blue-50 transition-colors"
                     >
@@ -283,6 +296,123 @@ export default function PDFDocumentsContent() {
           </div>
         )}
       </div>
+
+      {/* PDF Preview Modal */}
+      {previewDoc && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg w-full max-w-5xl h-5/6 flex flex-col shadow-2xl">
+            {/* Header */}
+            <div className="flex justify-between items-center p-6 border-b border-gray-200">
+              <div>
+                <h3 className="text-xl font-semibold text-gray-900">{previewDoc.title}</h3>
+                <p className="text-sm text-gray-500 mt-1">PDF Document Preview</p>
+              </div>
+              <button
+                onClick={() => {
+                  setPreviewDoc(null);
+                  setPdfError(false);
+                }}
+                className="text-gray-400 hover:text-gray-600 transition-colors"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            {/* PDF Viewer */}
+            <div className="flex-1 relative">
+              {!pdfError ? (
+                <div className="w-full h-full">
+                  <iframe
+                    src={previewDoc.url}
+                    className="w-full h-full border-0"
+                    title={previewDoc.title}
+                    onError={() => {
+                      console.log('Direct PDF failed, trying Google Docs viewer');
+                      const iframe = document.querySelector('iframe');
+                      if (iframe) {
+                        iframe.src = `https://docs.google.com/viewer?url=${encodeURIComponent(previewDoc.url)}&embedded=true`;
+                      }
+                    }}
+                    onLoad={(e) => {
+                      // Check if iframe loaded successfully
+                      setTimeout(() => {
+                        try {
+                          const iframe = e.target as HTMLIFrameElement;
+                          if (!iframe.contentDocument && !iframe.contentWindow) {
+                            setPdfError(true);
+                          }
+                        } catch (error) {
+                          console.log('PDF preview loaded successfully');
+                        }
+                      }, 2000);
+                    }}
+                  />
+                </div>
+              ) : (
+                <div className="w-full h-full flex items-center justify-center bg-gray-50">
+                  <div className="text-center p-8 max-w-md">
+                    <div className="w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                      <svg className="w-10 h-10 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                      </svg>
+                    </div>
+                    <h4 className="text-lg font-semibold text-gray-900 mb-3">PDF Ready for Download</h4>
+                    <p className="text-gray-600 mb-6">Click below to open or download the PDF document.</p>
+                    <div className="space-y-3">
+                      <a 
+                        href={previewDoc.url} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="block w-full bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors font-medium"
+                      >
+                        Open PDF in New Tab
+                      </a>
+                      <a 
+                        href={previewDoc.url} 
+                        download={previewDoc.title}
+                        className="block w-full bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 transition-colors font-medium"
+                      >
+                        Download PDF
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Footer */}
+            <div className="p-6 border-t border-gray-200 bg-gray-50">
+              <div className="flex justify-between items-center">
+                <div className="flex-1">
+                  <p className="text-sm text-gray-700">{previewDoc.description}</p>
+                  <p className="text-xs text-gray-500 mt-1">
+                    Uploaded on {new Date(previewDoc.createdAt).toLocaleDateString()}
+                  </p>
+                </div>
+                <div className="flex gap-3 ml-4">
+                  <a 
+                    href={previewDoc.url} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium"
+                  >
+                    Open PDF
+                  </a>
+                  <a 
+                    href={previewDoc.url} 
+                    download={previewDoc.title}
+                    className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors text-sm font-medium"
+                  >
+                    Download
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

@@ -40,6 +40,27 @@ interface Referrer {
   joinedAt: string
   referralsCount: number
   activeReferralsCount: number
+  milestoneRewards: {
+    referral8Cycles: number
+    referral15Cycles: number
+    referral25Cycles: number
+    totalTokensEarned: number
+    referral8LastReset: string | null
+    referral15LastReset: string | null
+    referral25LastReset: string | null
+  }
+  temporaryTokens: {
+    amount: number
+    grantedAt: string
+    expiresAt: string
+    prizeType: string
+    timeUntilExpiry: string
+  } | null
+  computed: {
+    totalCycles: number
+    hasActiveTokens: boolean
+    milestoneBreakdown: string
+  }
 }
 
 interface ReferredUser {
@@ -377,10 +398,13 @@ export default function ReferralsManagement() {
                             Active Referrals
                           </th>
                           <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Subscription
+                            Cycles Completed
                           </th>
                           <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Joined
+                            Tokens Earned
+                          </th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Current Temp Tokens
                           </th>
                           <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                             Status
@@ -407,11 +431,29 @@ export default function ReferralsManagement() {
                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                               {referrer.referralStats.activeReferrals}
                             </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                              {referrer.subscription.planName}
+                            <td className="px-6 py-4 whitespace-nowrap">
+                              <div className="text-xs space-y-1">
+                                <div className="text-gray-900 font-medium">{referrer.computed?.milestoneBreakdown || '8×0, 15×0, 25×0'}</div>
+                                <div className="text-gray-500">Total: {referrer.computed?.totalCycles || 0} cycles</div>
+                              </div>
                             </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                              {formatDate(referrer.joinedAt)}
+                            <td className="px-6 py-4 whitespace-nowrap">
+                              <div className="text-sm font-bold text-green-600">
+                                {referrer.milestoneRewards?.totalTokensEarned || 0} tokens
+                              </div>
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap">
+                              {referrer.temporaryTokens ? (
+                                <div className="text-xs">
+                                  <div className="font-bold text-orange-600">{referrer.temporaryTokens.amount} tokens</div>
+                                  <div className="text-gray-500">Expires: {referrer.temporaryTokens.timeUntilExpiry}</div>
+                                  <div className="text-gray-400 truncate max-w-[100px]" title={referrer.temporaryTokens.prizeType}>
+                                    {referrer.temporaryTokens.prizeType}
+                                  </div>
+                                </div>
+                              ) : (
+                                <span className="text-xs text-gray-400">None</span>
+                              )}
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap">
                               {getStatusBadge(referrer.subscription.isActive)}

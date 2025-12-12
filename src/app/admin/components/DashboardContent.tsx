@@ -146,27 +146,7 @@ export default function DashboardContent() {
       </div>
 
       {/* Additional Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-        <div className="bg-white rounded-lg border shadow-sm p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Token Usage</h3>
-          <div className="space-y-2">
-            <div className="flex justify-between text-gray-900">
-              <span className="text-gray-900">Distributed</span>
-              <span className="font-medium ">{analytics?.tokens?.distributed || 0}</span>
-            </div>
-            <div className="flex justify-between text-gray-900">
-              <span className="text-gray-600">Used</span>
-              <span className="font-medium">{analytics?.tokens?.used || 0}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-gray-600">Utilization</span>
-              <span className="font-medium text-blue-600">
-                {analytics?.tokens?.distributed ? ((analytics.tokens.used / analytics.tokens.distributed) * 100).toFixed(1) : 0}%
-              </span>
-            </div>
-          </div>
-        </div>
-
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
         <div className="bg-white rounded-lg border shadow-sm p-6">
           <h3 className="text-lg font-semibold text-gray-900 mb-4">Subscriptions</h3>
           <div className="space-y-2">

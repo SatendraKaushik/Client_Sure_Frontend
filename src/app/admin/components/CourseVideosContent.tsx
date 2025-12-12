@@ -23,6 +23,7 @@ export default function CourseVideosContent() {
   })
   const [editingVideo, setEditingVideo] = useState<CourseVideo | null>(null)
   const [isLoading, setIsLoading] = useState(false)
+  const [previewVideo, setPreviewVideo] = useState<CourseVideo | null>(null)
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -256,14 +257,20 @@ export default function CourseVideosContent() {
                   </div>
                   <div className="flex space-x-2">
                     <button 
+                      onClick={() => setPreviewVideo(video)}
+                      className="flex-1 text-green-600 hover:text-green-800 text-sm font-medium py-2 px-3 border border-green-200 rounded hover:bg-green-50 transition-colors"
+                    >
+                      Preview
+                    </button>
+                    <button 
                       onClick={() => editVideo(video)}
-                      className="flex-1 text-blue-600 hover:text-blue-800 text-sm font-medium"
+                      className="flex-1 text-blue-600 hover:text-blue-800 text-sm font-medium py-2 px-3 border border-blue-200 rounded hover:bg-blue-50 transition-colors"
                     >
                       Edit
                     </button>
                     <button 
                       onClick={() => deleteVideo(video.id)}
-                      className="flex-1 text-red-600 hover:text-red-800 text-sm font-medium"
+                      className="flex-1 text-red-600 hover:text-red-800 text-sm font-medium py-2 px-3 border border-red-200 rounded hover:bg-red-50 transition-colors"
                     >
                       Delete
                     </button>
@@ -274,6 +281,36 @@ export default function CourseVideosContent() {
           </div>
         )}
       </div>
+
+      {/* Video Preview Modal */}
+      {previewVideo && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg w-full max-w-4xl h-5/6 flex flex-col">
+            <div className="flex justify-between items-center p-4 border-b">
+              <h3 className="text-lg font-semibold text-gray-900">{previewVideo.title}</h3>
+              <button
+                onClick={() => setPreviewVideo(null)}
+                className="text-gray-500 hover:text-gray-700 text-2xl font-bold"
+              >
+                ×
+              </button>
+            </div>
+            <div className="flex-1 p-4 flex items-center justify-center">
+              <video 
+                className="max-w-full max-h-full rounded"
+                controls
+                autoPlay
+              >
+                <source src={previewVideo.url} type="video/mp4" />
+                Your browser does not support the video tag.
+              </video>
+            </div>
+            <div className="p-4 border-t bg-gray-50">
+              <p className="text-sm text-gray-600">{previewVideo.description}</p>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

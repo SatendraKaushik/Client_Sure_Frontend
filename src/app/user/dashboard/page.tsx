@@ -269,7 +269,7 @@ function DashboardContent() {
           </div>
           <div className="bg-white rounded-xl shadow-lg p-6 text-center">
             <div className="text-3xl font-bold text-green-600 mb-2">{userStats?.monthlyTokens.remaining || 0}</div>
-            <div className="text-gray-600">Monthly Tokens</div>
+            <div className="text-gray-600">Total Tokens</div>
             <div className="text-xs text-gray-500 mt-1">of {userStats?.monthlyTokens.total || 0}</div>
           </div>
           <div className="bg-white rounded-xl shadow-lg p-6 text-center">
@@ -507,38 +507,7 @@ function DashboardContent() {
           </div>
         )}
 
-        {/* Token Usage Overview */}
-        {userStats && (
-          <div className="bg-white rounded-2xl shadow-xl p-8 mb-8">
-            <h2 className="text-2xl font-bold text-gray-900 mb-6">Token Usage</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              <div>
-                <h3 className="text-lg font-semibold text-gray-700 mb-4">Daily Tokens</h3>
-                <div className="bg-gray-200 rounded-full h-4 mb-2">
-                  <div 
-                    className="bg-blue-600 h-4 rounded-full" 
-                    style={{width: `${Math.min((userStats.dailyTokens / (userStats.dailyLimit || userStats.dailyTokens || 1)) * 100, 100)}%`}}
-                  ></div>
-                </div>
-                <p className="text-sm text-gray-600">
-                  {userStats.dailyTokens} daily limit ({userStats.totalAvailable} total available)
-                </p>
-              </div>
-              <div>
-                <h3 className="text-lg font-semibold text-gray-700 mb-4">Monthly Tokens</h3>
-                <div className="bg-gray-200 rounded-full h-4 mb-2">
-                  <div 
-                    className="bg-green-600 h-4 rounded-full" 
-                    style={{width: `${userStats.monthlyTokens.total > 0 ? (userStats.monthlyTokens.remaining / userStats.monthlyTokens.total) * 100 : 0}%`}}
-                  ></div>
-                </div>
-                <p className="text-sm text-gray-600">
-                  {userStats.monthlyTokens.remaining} of {userStats.monthlyTokens.total} remaining
-                </p>
-              </div>
-            </div>
-          </div>
-        )}
+
       </div>
 
       <Footer />

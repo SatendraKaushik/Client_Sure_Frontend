@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo, Suspense } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
-import { Lock, Unlock, Search, Download, Filter, Calendar, Linkedin, Instagram, Facebook, Globe, MapPin, Eye, Mail, X } from "lucide-react"
+import { Lock, Unlock, Search, Download, Filter, Calendar, Linkedin, Instagram, Facebook, Globe, MapPin, Mail, X } from "lucide-react"
 import { toast } from "sonner"
 import Navbar from "../components/Navbar"
 import Footer from "../components/Footer"
@@ -49,7 +49,6 @@ function LeadsContent() {
   const [endDate, setEndDate] = useState("")
   const [bulkSelectCount, setBulkSelectCount] = useState<number>(0)
   const [bulkProcessing, setBulkProcessing] = useState(false)
-  const [expandedSocialLinks, setExpandedSocialLinks] = useState<string | null>(null)
   const [showEmailModal, setShowEmailModal] = useState(false)
   const [emailSubject, setEmailSubject] = useState("")
   const [emailMessage, setEmailMessage] = useState("")
@@ -59,11 +58,21 @@ function LeadsContent() {
   const [emailCountry, setEmailCountry] = useState("")
   const [sendingEmail, setSendingEmail] = useState(false)
   const [selectedEmailLeads, setSelectedEmailLeads] = useState<string[]>([])
+  const [allCategories, setAllCategories] = useState<string[]>([])
+  const [allCities, setAllCities] = useState<string[]>([])
+  const [allCountries, setAllCountries] = useState<string[]>([])
+  const [hoveredPhone, setHoveredPhone] = useState<string | null>(null)
 
   const loadLeads = async () => {
     setLoading(true)
     try {
-      const response = await Axios.get(`/auth/leads?page=${page}&limit=20`)
+      const params = new URLSearchParams({ page: page.toString(), limit: '20' });
+      if (selectedCategory) params.append('category', selectedCategory);
+      if (selectedCountry) params.append('country', selectedCountry);
+      if (startDate) params.append('startDate', startDate);
+      if (endDate) params.append('endDate', endDate);
+
+      const response = await Axios.get(`/auth/leads?${params.toString()}`)
       console.log("leads", response.data)
       setLeads(response.data.leads)
       setTotalPages(response.data.pagination.totalPages)
@@ -288,6 +297,13 @@ function LeadsContent() {
 
   useEffect(() => {
     if (activeTab === 'all') {
+      setPage(1)
+      loadLeads()
+    }
+  }, [selectedCategory, selectedCountry, startDate, endDate])
+
+  useEffect(() => {
+    if (activeTab === 'all') {
       loadLeads()
     }
   }, [page])
@@ -298,20 +314,36 @@ function LeadsContent() {
     }
   }, [accessedPage])
 
+  useEffect(() => {
+    const fetchFilterOptions = async () => {
+      try {
+        const response = await Axios.get('/auth/leads/filter-options')
+        setAllCategories(response.data.categories || [])
+        setAllCities(response.data.cities || [])
+        setAllCountries(response.data.countries || [])
+      } catch (error) {
+        console.error('Error fetching filter options:', error)
+      }
+    }
+    if (activeTab === 'all') {
+      fetchFilterOptions()
+    }
+  }, [activeTab])
+
   const cities = useMemo(() => {
-    const currentLeads = activeTab === 'all' ? leads : accessedLeads
-    return Array.from(new Set(currentLeads.map(l => l.city).filter(Boolean))).sort()
-  }, [leads, accessedLeads, activeTab])
+    if (activeTab === 'all') return allCities
+    return Array.from(new Set(accessedLeads.map(l => l.city).filter(Boolean))).sort()
+  }, [activeTab, allCities, accessedLeads])
 
   const countries = useMemo(() => {
-    const currentLeads = activeTab === 'all' ? leads : accessedLeads
-    return Array.from(new Set(currentLeads.map(l => l.country).filter(Boolean))).sort()
-  }, [leads, accessedLeads, activeTab])
+    if (activeTab === 'all') return allCountries
+    return Array.from(new Set(accessedLeads.map(l => l.country).filter(Boolean))).sort()
+  }, [activeTab, allCountries, accessedLeads])
 
   const categories = useMemo(() => {
-    const currentLeads = activeTab === 'all' ? leads : accessedLeads
-    return Array.from(new Set(currentLeads.map(l => l.category).filter(Boolean))).sort()
-  }, [leads, accessedLeads, activeTab])
+    if (activeTab === 'all') return allCategories
+    return Array.from(new Set(accessedLeads.map(l => l.category).filter(Boolean))).sort()
+  }, [activeTab, allCategories, accessedLeads])
 
   const filteredLeads = (activeTab === 'all' ? leads : accessedLeads).filter(lead => {
     const searchLower = searchTerm.toLowerCase()
@@ -323,6 +355,11 @@ function LeadsContent() {
       lead.city?.toLowerCase().includes(searchLower) ||
       lead.country?.toLowerCase().includes(searchLower) ||
       lead.category?.toLowerCase().includes(searchLower)
+    
+    if (activeTab === 'all') {
+      return matchesSearch
+    }
+    
     const matchesCity = !selectedCity || lead.city === selectedCity
     const matchesCountry = !selectedCountry || lead.country === selectedCountry
     const matchesCategory = !selectedCategory || lead.category === selectedCategory
@@ -346,7 +383,7 @@ function LeadsContent() {
   }).sort((a, b) => a.leadId.localeCompare(b.leadId))
 
   const lockedLeads = useMemo(() => {
-    return filteredLeads.filter(lead => activeTab === 'all' && !lead.isAccessedByUser)
+    return activeTab === 'all' ? filteredLeads : []
   }, [filteredLeads, activeTab])
 
   return (
@@ -505,16 +542,18 @@ function LeadsContent() {
                 ))}
               </select>
 
-              <select
-                value={selectedCity}
-                onChange={(e) => setSelectedCity(e.target.value)}
-                className="px-3 py-2 border border-gray-300 rounded-lg text-sm text-gray-900"
-              >
-                <option value="">All Cities</option>
-                {cities.map(city => (
-                  <option key={city} value={city}>{city}</option>
-                ))}
-              </select>
+              {activeTab === 'accessed' && (
+                <select
+                  value={selectedCity}
+                  onChange={(e) => setSelectedCity(e.target.value)}
+                  className="px-3 py-2 border border-gray-300 rounded-lg text-sm text-gray-900"
+                >
+                  <option value="">All Cities</option>
+                  {cities.map(city => (
+                    <option key={city} value={city}>{city}</option>
+                  ))}
+                </select>
+              )}
 
               <select
                 value={selectedCountry}
@@ -546,7 +585,7 @@ function LeadsContent() {
                 />
               </div>
 
-              {(selectedCity || selectedCountry || selectedCategory || startDate || endDate) && (
+              {(selectedCountry || selectedCategory || startDate || endDate || (activeTab === 'accessed' && selectedCity)) && (
                 <button
                   onClick={() => {
                     setSelectedCity("")
@@ -592,17 +631,16 @@ function LeadsContent() {
                           <th className="px-2 py-3 text-left text-sm font-semibold text-gray-700 uppercase tracking-wide">CITY</th>
                           <th className="px-2 py-3 text-left text-sm font-semibold text-gray-700 uppercase tracking-wide">EMAIL</th>
                           <th className="px-2 py-3 text-left text-sm font-semibold text-gray-700 uppercase tracking-wide">PHONE</th>
-                          <th className="px-2 py-3 text-left text-sm font-semibold text-gray-700 uppercase tracking-wide">SOCIAL LINKS</th>
+                          <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700 uppercase tracking-wide min-w-[160px]">SOCIAL LINKS</th>
                         </>
                       )}
-                      <th className="px-3 py-3 text-left text-sm font-semibold text-gray-700 uppercase tracking-wide">STATUS</th>
                       <th className="px-3 py-3 text-center text-sm font-semibold text-gray-700 uppercase tracking-wide">ACTION</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y">
                     {filteredLeads.length === 0 ? (
                       <tr>
-                        <td colSpan={activeTab === 'accessed' ? 12 : 8} className="px-2 py-8 text-center text-sm text-gray-500">No leads found</td>
+                        <td colSpan={activeTab === 'accessed' ? 11 : 7} className="px-2 py-8 text-center text-sm text-gray-500">No leads found</td>
                       </tr>
                     ) : (
                       filteredLeads.map((lead) => (
@@ -649,102 +687,55 @@ function LeadsContent() {
                               <td className="px-2 py-3 text-sm text-gray-700 font-medium" title={lead.email}>
                                 <div className="max-w-[150px] truncate">{lead.email}</div>
                               </td>
-                              <td className="px-2 py-3 text-sm text-gray-700 font-medium">
-                                <div className="max-w-[100px] truncate">{lead.phone || '-'}</div>
+                              <td className="px-2 py-3 text-sm text-gray-700 font-medium relative">
+                                <div 
+                                  className="max-w-[100px] truncate cursor-pointer"
+                                  onMouseEnter={() => setHoveredPhone(lead.id)}
+                                  onMouseLeave={() => setHoveredPhone(null)}
+                                >
+                                  {lead.phone || '-'}
+                                </div>
+                                {hoveredPhone === lead.id && lead.phone && (
+                                  <div className="absolute z-50 bg-white text-black px-3 py-2 rounded shadow-lg border border-gray-300 whitespace-nowrap left-0 top-full mt-1">
+                                    <div className="font-bold text-sm">{lead.phone}</div>
+                                  </div>
+                                )}
                               </td>
-                              <td className="px-2 py-2 text-xs text-gray-600 relative">
-                                <div className="relative">
-                                  <button
-                                    onClick={(e) => {
-                                      const rect = e.currentTarget.getBoundingClientRect();
-                                      const spaceBelow = window.innerHeight - rect.bottom;
-                                      const spaceAbove = rect.top;
-                                      setExpandedSocialLinks(expandedSocialLinks === lead.id ? null : lead.id);
-                                    }}
-                                    className="text-blue-600 hover:text-blue-800 text-xs font-medium px-1 py-1 border border-blue-300 rounded"
-                                  >
-                                    View Links
-                                  </button>
-                                  {expandedSocialLinks === lead.id && (
-                                    <div className={`absolute z-[9999] bg-white border-2 border-gray-300 rounded-lg shadow-xl p-2 min-w-[180px] right-0 ${filteredLeads.indexOf(lead) < 3 ? 'top-full mt-1' : 'bottom-full mb-1'}`}>
-                                      <div className="relative">
-                                        <div className="absolute -top-2 right-4 w-4 h-4 bg-white border-l-2 border-t-2 border-gray-300 transform rotate-45"></div>
-                                        <div className="space-y-1.5">
-                                          <div className="flex items-center justify-between border-b border-gray-200 pb-2">
-                                            <h4 className="font-medium text-gray-900 text-xs">Social Links</h4>
-                                            <button 
-                                              onClick={() => setExpandedSocialLinks(null)}
-                                              className="text-gray-400 hover:text-gray-600 p-1"
-                                            >
-                                              <X className="w-4 h-4" />
-                                            </button>
-                                          </div>
-                                          {lead.websiteLink && (
-                                            <a href={lead.websiteLink} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-blue-600 hover:text-blue-800 text-xs p-1 rounded hover:bg-blue-50 transition-colors">
-                                              <Globe className="w-3 h-3 flex-shrink-0" /> 
-                                              <span className="font-medium text-xs">Website</span>
-                                            </a>
-                                          )}
-                                          {lead.linkedin && (
-                                            <a href={lead.linkedin} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-blue-700 hover:text-blue-900 text-xs p-1 rounded hover:bg-blue-50 transition-colors">
-                                              <Linkedin className="w-3 h-3 flex-shrink-0" /> 
-                                              <span className="font-medium text-xs">LinkedIn</span>
-                                            </a>
-                                          )}
-                                          {lead.facebookLink && (
-                                            <a href={lead.facebookLink} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-blue-600 hover:text-blue-800 text-xs p-1 rounded hover:bg-blue-50 transition-colors">
-                                              <Facebook className="w-3 h-3 flex-shrink-0" /> 
-                                              <span className="font-medium text-xs">Facebook</span>
-                                            </a>
-                                          )}
-                                          {lead.instagram && (
-                                            <a href={lead.instagram.startsWith('http') ? lead.instagram : `https://instagram.com/${lead.instagram.replace('@', '')}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-pink-600 hover:text-pink-800 text-xs p-1 rounded hover:bg-pink-50 transition-colors">
-                                              <Instagram className="w-3 h-3 flex-shrink-0" /> 
-                                              <span className="font-medium text-xs">Instagram</span>
-                                            </a>
-                                          )}
-                                          {lead.googleMapLink && (
-                                            <a href={lead.googleMapLink} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-green-600 hover:text-green-800 text-xs p-1 rounded hover:bg-green-50 transition-colors">
-                                              <MapPin className="w-3 h-3 flex-shrink-0" /> 
-                                              <span className="font-medium text-xs">Google Maps</span>
-                                            </a>
-                                          )}
-                                          {lead.addressStreet && (
-                                            <div className="text-xs text-gray-700 pt-2 border-t border-gray-200 bg-gray-50 p-2 rounded">
-                                              <div className="flex items-start gap-1.5">
-                                                <MapPin className="w-3 h-3 text-gray-500 mt-0.5 flex-shrink-0" />
-                                                <div>
-                                                  <div className="font-medium text-gray-900 mb-0.5 text-xs">Address:</div>
-                                                  <div className="text-gray-600 text-xs">{lead.addressStreet}</div>
-                                                </div>
-                                              </div>
-                                            </div>
-                                          )}
-                                          {!lead.websiteLink && !lead.linkedin && !lead.facebookLink && !lead.instagram && !lead.googleMapLink && !lead.addressStreet && (
-                                            <div className="text-center py-4">
-                                              <div className="text-gray-400 text-xs py-2">No social links available</div>
-                                            </div>
-                                          )}
-                                        </div>
-                                      </div>
-                                    </div>
+                              <td className="px-4 py-3">
+                                <div className="flex items-center gap-2">
+                                  {lead.websiteLink && (
+                                    <a href={lead.websiteLink} target="_blank" rel="noopener noreferrer" title="Website">
+                                      <Globe className="w-5 h-5 text-blue-600 hover:text-blue-800 cursor-pointer" />
+                                    </a>
+                                  )}
+                                  {lead.linkedin && (
+                                    <a href={lead.linkedin} target="_blank" rel="noopener noreferrer" title="LinkedIn">
+                                      <Linkedin className="w-5 h-5 text-blue-700 hover:text-blue-900 cursor-pointer" />
+                                    </a>
+                                  )}
+                                  {lead.facebookLink && (
+                                    <a href={lead.facebookLink} target="_blank" rel="noopener noreferrer" title="Facebook">
+                                      <Facebook className="w-5 h-5 text-blue-600 hover:text-blue-800 cursor-pointer" />
+                                    </a>
+                                  )}
+                                  {lead.instagram && (
+                                    <a href={lead.instagram.startsWith('http') ? lead.instagram : `https://instagram.com/${lead.instagram.replace('@', '')}`} target="_blank" rel="noopener noreferrer" title="Instagram">
+                                      <Instagram className="w-5 h-5 text-pink-600 hover:text-pink-800 cursor-pointer" />
+                                    </a>
+                                  )}
+                                  {lead.googleMapLink && (
+                                    <a href={lead.googleMapLink} target="_blank" rel="noopener noreferrer" title="Google Maps">
+                                      <MapPin className="w-5 h-5 text-green-600 hover:text-green-800 cursor-pointer" />
+                                    </a>
+                                  )}
+                                  {!lead.websiteLink && !lead.linkedin && !lead.facebookLink && !lead.instagram && !lead.googleMapLink && (
+                                    <span className="text-gray-400 text-xs">-</span>
                                   )}
                                 </div>
                               </td>
                             </>
                           )}
 
-                          <td className="px-3 py-3">
-                            {activeTab === 'accessed' || lead.isAccessedByUser ? (
-                              <span className="bg-green-50 text-green-700 px-3 py-1.5 rounded-md text-sm font-semibold border border-green-200 whitespace-nowrap">
-                                Accessed
-                              </span>
-                            ) : (
-                              <span className="bg-gray-100 text-gray-700 px-3 py-1.5 rounded-md text-sm font-semibold border border-gray-300 whitespace-nowrap">
-                                Locked
-                              </span>
-                            )}
-                          </td>
                           <td className="px-3 py-3">
                             <div className="flex items-center justify-center">
                               {activeTab === 'accessed' ? (
@@ -758,11 +749,6 @@ function LeadsContent() {
                                     <span>Email</span>
                                   </button>
                                 </div>
-                              ) : lead.isAccessedByUser ? (
-                                <button onClick={() => router.push('/user/leads?tab=accessed')} className="text-blue-600 hover:text-blue-800 text-sm font-semibold flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 border border-blue-200 rounded-md hover:bg-blue-100 transition-colors">
-                                  <Eye className="w-4 h-4" />
-                                  <span>View</span>
-                                </button>
                               ) : (
                                 <button onClick={() => handleAccessLead(lead.id)} className="text-gray-900 hover:text-gray-700 text-xs font-medium flex items-center gap-1 px-2 py-1 border border-gray-300 rounded hover:bg-gray-50">
                                   <Lock className="w-3 h-3" />
